@@ -1,0 +1,14 @@
+EXE_INC = \
+    -I$(LIB_SRC)/dem/lnInclude \
+    -I$(LIB_SRC)/geometry/geometryObjects/lnInclude \
+    -I$(LIB_SRC)/geometry/geometryModels/lnInclude \
+    -I$(LIB_SRC)/mesh/lnInclude \
+    -I$(LIB_SRC)/debug/lnInclude
+
+LIB_LIBS = \
+    -L$(FOAM_LIBBIN) \
+    -ldem \
+    -lgeometryObjects \
+    -lgeometryModels \
+    -lmesh \
+    -ldebug 

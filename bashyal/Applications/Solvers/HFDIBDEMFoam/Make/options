@@ -1,0 +1,31 @@
+EXE_INC = \
+    -I$(LIB_SRC)/transportModels \
+    -I$(LIB_SRC)/transportModels/transportModel \
+    -I$(LIB_SRC)/transportModels/singlePhaseTransportModel \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/dynamicFvMesh/lnInclude \
+    -I$(LIB_SRC)/dynamicMesh/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/fvOptions/lnInclude \
+    -I$(LIB_SRC)/surfMesh/lnInclude \
+    -I$(LIB_SRC)/sampling/lnInclude \
+    -I$(WM_PROJECT_DIR)/bashyal/Src/HFDIBDEM/lnInclude
+
+    # -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    # -I$(LIB_SRC)/MomentumTransportModels/incompressible/lnInclude \
+
+EXE_LIBS = \
+    -lincompressibleTransportModels \
+    -lfiniteVolume \
+    -ldynamicFvMesh \
+    -ltopoChangerFvMesh \
+    -ldynamicMesh \
+    -lmeshTools \
+    -lsurfMesh \
+    -lfvOptions \
+    -lsampling \
+    -L$(FOAM_USER_LIBBIN) \
+    -lHFDIBDEM
+
+    # -lmomentumTransportModels \
+    # -lincompressibleMomentumTransportModels \

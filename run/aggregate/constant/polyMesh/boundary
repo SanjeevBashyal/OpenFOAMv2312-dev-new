@@ -1,0 +1,54 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       polyBoundaryMesh;
+    location    "constant/polyMesh";
+    object      boundary;
+}
+
+7
+(
+Ymin
+{
+    type patch;
+    nFaces 10;
+    startFace 234;
+}
+Zmin
+{
+    type patch;
+    nFaces 12;
+    startFace 244;
+}
+Xmin
+{
+    type patch;
+    nFaces 21;
+    startFace 256;
+}
+aggregate
+{
+    type patch;
+    nFaces 80;
+    startFace 277;
+}
+Zmax
+{
+    type patch;
+    nFaces 12;
+    startFace 357;
+}
+Ymax
+{
+    type patch;
+    nFaces 10;
+    startFace 369;
+}
+Xmax
+{
+    type patch;
+    nFaces 26;
+    startFace 379;
+}
+)

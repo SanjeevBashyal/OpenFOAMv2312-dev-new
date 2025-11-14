@@ -1,0 +1,59 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2312                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      nut;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 2 -1 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    YZ-Xmin
+    {
+        type            fixedValue;  // Inlet boundary condition
+        value           uniform 1e-5;  // Small initial value for turbulent viscosity
+    }
+
+    YZ-Xmax
+    {
+        type            zeroGradient;  // Outlet boundary condition
+    }
+
+    XZ-Ymin
+    {
+        type            nutkWallFunction;  // Wall function for turbulent viscosity
+        value           uniform 0;
+    }
+
+    XZ-Ymax
+    {
+        type            zeroGradient;  // Free-slip or symmetry boundary condition
+    }
+
+    XY-Zmin
+    {
+        type            nutkWallFunction;  // Wall function for turbulent viscosity
+        value           uniform 0;
+    }
+
+    XY-Zmax
+    {
+        type            nutkWallFunction;  // Wall function for turbulent viscosity
+        value           uniform 0;
+    }
+}
+
+
+// ************************************************************************* //
