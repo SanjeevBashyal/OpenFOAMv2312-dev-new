@@ -90,8 +90,10 @@ For a block on an incline $\theta$:
     \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.3$.
 \end{itemize}
 
-\subsubsection{Test Case 3: CFD-DEM Validation - Terminal Velocity of a Settling Cube}
-This test validates Buoyancy (Volume calculation), Drag Force (Coupling), and the IBM/Cut-Cell Fluid Displacement.
+\subsubsection{Test Case 3: CFD-DEM Validation - Free Sedimentation of a settling cube}
+This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the free fall of a single settling cube in a quiescent fluid, with results compared against CFDEM Coupling and theoretical predictions. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces.
+
+The computational domain consists of a rectangular channel with dimensions sufficient to minimize wall effects on particle motion. The particle is initially positioned at the top of the domain. Simulations are performed using the newly developed "fineDEMfoam" solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
 
 \textbf{Theory:}
 A particle falling in a fluid accelerates until Drag + Buoyancy equals Gravity.
@@ -106,6 +108,13 @@ F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v
     \item \textbf{Particle:} A Cube ($L = 0.02 \, m$, $\rho_s = 2000 \, kg/m^3$, $m = 0.016 \, kg$).
     \item \textbf{Initial State:} Released from rest, fully submerged.
 \end{itemize}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/single_particle_case.png}
+	\caption{Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
+	\label{fig:Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
+\end{figure}
 
 \subsubsection{Test Case 4: CFD-DEM Validation - The Floating Cube Equilibrium}
 This test validates the VOF-IBM Coupling and Free-Surface Intersection.
@@ -124,41 +133,15 @@ Archimedes' principle for a floating object:
     \item \textbf{Initial State:} Drop from slightly above water.
 \end{itemize}
 
-\subsection{Study Test Cases}
+\section{Primary Application Study Case}
+The primary study case for this research involves the simulation of free surface flow in a sloped rectangular channel. The domain features a rigid bed and a mobile bed composed of sand particles. This setup aims to investigate sediment transport mechanisms, bedform evolution, and the interaction between the turbulent free-surface flow and the granular bed. The simulation utilizes the full capabilities of the developed `fineDEMfoam` solver, utilizing the VOF method for the free surface and the coupled DEM for the mobile sediment phase.
+\par
 
-To validate the performance and accuracy of the newly developed OpenFOAM based CFD-DEM solver in complex scenarios, simulations are conducted on three study test cases and the results are compared with those obtained from two state-of-the-art Eulerian-Lagrangian coupling frameworks. The CFDEM{\circledR} coupling framework \parencite{hager_parallel_2014} integrates OpenFOAM with LIGGGHTS{\circledR} DEM engine, providing a robust platform for resolved and unresolved particle-fluid interactions. The OpenHFDIB-DEM solver \parencite{studenik_openhfdib-dem_2024} extends OpenFOAM with a hybrid Fictitious Domain-Immersed Boundary method, enabling simulations with arbitrarily shaped particles. Three test cases are considered: free sedimentation of a single spherical particle, DEM pouring heap formation, and particle-laden flow in a channel, which are fundamental validation benchmarks for CFD-DEM solvers. These cases are selected due to their relevance to sediment transport processes and their ability to validate the accuracy of particle-particle interactions and particle-fluid coupling mechanisms. For each test case, simulations are performed using the newly developed solver, and the results are systematically compared with those obtained from CFDEM Coupling and OpenHFDIB-DEM solvers. The simulations are conducted under controlled configurations, with initial and boundary conditions carefully set to replicate experimental scenarios, ensuring a fair and meaningful comparison across all solvers.
+\subsubsection{Test Case A: Particle-Laden Flow in a Horizontal Channel}
 
-\subsubsection{Test Case A: Free Sedimentation of a Single Spherical Particle}
+To evaluate the performance of the newly developed CFD-DEM solver in handling complex particle-fluid interactions, a test case involving multiple particles in a horizontal channel flow is simulated. This configuration tests the solver's capability to handle particle-particle collisions, particle-wall interactions, and the coupling between fluid flow and particle motion. 
 
-This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the free fall of a single spherical particle in a quiescent fluid, with results compared against CFDEM Coupling and theoretical predictions. This fundamental problem serves as a validation benchmark for CFD-DEM solvers, as it allows direct comparison with analytical solutions and experimental data. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces. The performance of the newly developed solver is compared against theoretical predictions based on Stokes' law and empirical drag correlations for higher Reynolds numbers, as well as against results obtained from CFDEM Coupling simulations.
-
-A spherical particle with specified diameter and density is released from rest in a static fluid column. The computational domain consists of a rectangular channel with dimensions sufficient to minimize wall effects on particle motion. The particle is initially positioned at the top of the domain, and the simulation tracks its trajectory, velocity, and settling velocity as it falls under gravity. Simulations are performed using the newly developed solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/single_particle_case.png}
-	\caption{Geometry for simulating free sedimentation of a single spherical particle with dimensions in cm}
-	\label{fig:Geometry for simulating free sedimentation of a single spherical particle with dimensions in cm}
-\end{figure}
-
-\subsubsection{Test Case B: DEM Pouring Heap Formation}
-
-This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the formation of a granular heap through particle pouring, with results compared against CFDEM Coupling and experimental measurements. This fundamental problem serves as a validation benchmark for DEM solvers, as it tests the accuracy of particle-particle contact models, friction coefficients, and the ability to capture realistic granular material behavior. The heap formation process involves particles being poured from a source onto a horizontal surface, where they accumulate and form a characteristic conical or asymmetric heap shape. The performance of the newly developed solver is compared against experimental measurements of heap geometry, including the angle of repose, heap height, and base diameter, which are sensitive to particle properties such as friction, restitution coefficient, and particle size distribution. Additionally, results are compared with those obtained from CFDEM Coupling simulations to assess the relative performance of the solvers.
-
-Particles with specified diameter, density, and material properties are released from a hopper or point source located above a horizontal base plate. The computational domain consists of a rectangular container with dimensions sufficient to accommodate the fully formed heap without significant wall effects. Particles are introduced at a controlled rate from the source, and the simulation tracks their motion, collisions, and accumulation on the base surface. Simulations are performed using the newly developed solver, where particle dynamics including contact forces, friction, and collisions are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution and particle properties are kept consistent across all simulations to ensure a fair comparison. Key parameters monitored during the simulation include the evolution of heap geometry, particle velocity distributions, contact force networks, and the final angle of repose, which provides a direct measure of the material's frictional properties and the solver's accuracy in modeling granular mechanics. These parameters are extracted from all simulations for systematic comparative analysis.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/dem_heap_case.png}
-	\caption{Geometry for simulating DEM pouring heap formation with dimensions in cm}
-	\label{fig:Geometry for simulating DEM pouring heap formation with dimensions in cm}
-\end{figure}
-
-\subsubsection{Test Case C: Particle-Laden Flow in a Horizontal Channel}
-
-To evaluate the performance of the newly developed CFD-DEM solver in handling complex particle-fluid interactions, a test case involving multiple particles in a horizontal channel flow is simulated, with results compared against OpenHFDIB-DEM. This configuration tests the solver's capability to handle particle-particle collisions, particle-wall interactions, and the coupling between fluid flow and particle motion. The OpenHFDIB-DEM solver's ability to represent irregular particle shapes using the hybrid Fictitious Domain-Immersed Boundary method \parencite{studenik_openhfdib-dem_2024,isoz_hybrid_2022} provides a benchmark for comparison, particularly relevant for sediment transport applications where natural grains exhibit non-spherical geometries.
-
-The computational domain consists of a horizontal channel with specified length, width, and height. A uniform inlet velocity profile is applied, creating a fully developed turbulent flow. Spherical and non-spherical particles are introduced at the inlet, and their transport, settling, and interaction with the channel bed are monitored throughout the simulation. Simulations are performed using the newly developed solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using OpenHFDIB-DEM, which employs the hybrid Fictitious Domain-Immersed Boundary method for particle representation. The mesh is generated using OpenFOAM utilities with consistent refinement strategies across all solvers, including appropriate refinement near the channel walls and in regions of high particle concentration. Boundary conditions include no-slip walls at the bottom and sides, a symmetry or free-slip condition at the top, and appropriate inlet-outlet conditions for the fluid phase. Particle properties, including size distribution, density, and shape parameters, are initialized identically across all simulations to match experimental or theoretical configurations. The simulation tracks particle trajectories, velocities, and fluid flow fields from all solvers, providing comprehensive data for validation against experimental measurements and for comparative analysis between the newly developed solver and OpenHFDIB-DEM.
+The computational domain consists of a horizontal channel with specified length, width, and height. A uniform inlet velocity profile is applied, creating a fully developed turbulent flow. Polyhedron particles representing sand are introduced at the inlet, and their transport, settling, and interaction with the channel bed are monitored throughout the simulation. Simulations are performed using the newly developed solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. Boundary conditions include no-slip walls at the bottom and sides, a symmetry or free-slip condition at the top, and appropriate inlet-outlet conditions for the fluid phase. Particle properties, including size distribution, density, and shape parameters, are initialized identically across all simulations to match experimental or theoretical configurations. The simulation tracks particle trajectories, velocities, and fluid flow fields to compare with the theoretical near bed region physics involving bed shear stress and particle motion.
 
 \begin{figure}[ht]
 	\centering
@@ -167,6 +150,5 @@ The computational domain consists of a horizontal channel with specified length,
 	\label{fig:Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
 \end{figure}
 
-\section{Primary Application Study Case}
-The primary study case for this research involves the simulation of free surface flow in a sloped rectangular channel. The domain features a rigid bed and a mobile bed composed of sand particles. This setup aims to investigate sediment transport mechanisms, bedform evolution, and the interaction between the turbulent free-surface flow and the granular bed. The simulation leverages the full capabilities of the developed `fineDEMfoam` solver, utilizing the VOF method for the free surface and the coupled DEM for the mobile sediment phase.
-\par
+
+
