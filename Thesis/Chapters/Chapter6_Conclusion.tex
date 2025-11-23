@@ -1,0 +1,23 @@
+\chapter{CONCLUSION}
+\label{chapter7}
+\section{Summary and Conclusion}
+
+The first objective mentioned in section 1.4 is achieved by conducting comparative analysis of $k-\epsilon $ and $k-\omega $ turbulence models on SedFOAM solver and the second and third objective are being achieved by developing a model integrating a one-way coupling mechanism between the existing OpenFOAM pimple solver and the DEM solver on body-fit-immersed boundary geometry representing a particle. It demonstrates the practicality of the OpenFOAM-based CFD-DEM framework, which integrates the OpenFOAM${^{\circledR}}$ CFD toolbox OpenFOAM-v2312 with the custom DEM code implemented in OpenFOAM. The conclusions are summarized in the following points:\par
+
+\begin{enumerate}
+	\item  Among two equation RANS turbulence model, $k-\omega $ turbulence model better represents sediment flow dynamics near bed region in two phase Eulerian Eulerian solution approach.\par
+	\item  The CFD-DEM solver employs a body-fitted immersed boundary method to precisely model cubical sediment particles in OpenFOAM, surpassing the constraints of traditional spherical assumptions.\par
+	\item  The simulation of settling velocities for cubical particles aligns closely with the experimental data, verifying the solver's applicability to the free sedimentation problem with one-way coupling.\par
+\end{enumerate}
+
+The solver is presently limited to single particle cases and needs further development of two-way coupling and multi-particle interactions to simulate complex sediment transport like bedload movement.\par
+
+\section{Recommendations for Further Work}
+
+The CFD-DEM solver implemented in OpenFOAM in the project is at its initial stage and lots of implementations are to be made to develop a robust and competitive tool for CFD-DEM analysis in the academic and professional sector. The further implementations required in the solver are:\par
+
+\begin{enumerate}
+	\item  Particle-Particle Interaction in DEM solver\par
+	\item  Particle interactions as source terms in the fluid solver in the momentum equation\par
+	\item  Two-way and four-way CFD-DEM coupling mechanism\par
+\end{enumerate}

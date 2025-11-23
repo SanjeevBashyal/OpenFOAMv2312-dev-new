@@ -1,0 +1,31 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2312                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       dictionary;
+    location    "/usr/lib/openfoam/openfoam2312/bashyal/Applications/Solvers/interHFDIBfoam/interHFDIBfoam_test/bodiesInfo/0.05";
+    object      body4.info;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+bodyId          4;
+
+bodyName        particle5;
+
+Vel             ( 0.0303849 -0.30388 0 );
+
+omega           0;
+
+Axis            ( 0 0 1 );
+
+static          0;
+
+timeStepsInContWStatic 0;

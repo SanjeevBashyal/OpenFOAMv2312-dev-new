@@ -1,0 +1,199 @@
+% chapter Discussion, limitation, future work, and recommendation
+\chapter{ RESULTS }
+\label{chapter6}
+\section{Comparative Analysis of RANS Turbulence Closure Schemes in SedFoam}
+
+\subsection{Single Fluid Phase Flow near Solid Boundary}
+
+The velocity distribution at the end of 1000s obtained from the simulation with turbulence model $k-\omega $ shows higher velocity gradient near the boundary than that of $k-\epsilon $ turbulence model.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/velocity_distribution_case_boundary.png}
+	\caption{Velocity Distribution along vertical direction from solid boundary at t=1000s; $k-\omega $ turbulence model on the left and $k-\epsilon $ model on the right}
+	\label{fig:Velocity Distribution along vertical direction from solid boundary at t=1000s}
+\end{figure}
+
+The turbulent kinetic energy is found to be higher for same average velocities for $k-\epsilon $ simulation than $k-\omega $ simulation which is observed from the higher values of $k$ in $k-\epsilon $ simulation shown in the figure below:\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/k-distribution_case_boundary.png}
+	\caption{Turbulent kinetic energy distribution along vertical direction from solid boundary at t=1000s; $k-\omega $ turbulence model on the left and $k-\epsilon $ model on the right}
+	\label{fig:Turbulent kinetic energy distribution along vertical direction from solid boundary at t=1000s}
+\end{figure}
+
+Compared with DNS simulations performed by \parencite{mansour_direct_1999}, the velocity distribution $\left(\frac{u}{u_{max}}\right)$ resulted by $k-\omega $ model closely matches with DNS results with a NSE value of 0.97 whereas $k-\epsilon $ model resulted a NSE 0.93.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/velocity_graph_case_boundary.png}
+	\caption{Comparison of velocity distribution obtained from simulation with DNS performed by \parencite{mansour_direct_1999}}
+	\label{fig:Comparison of velocity distribution}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/k-graph_case_boundary.png}
+	\caption{Comparison of turbulent kinetic energy distribution normalized with wall shear stress, with DNS results}
+	\label{fig:Comparison of turbulent kinetic energy distribution normalized with wall shear stress, with DNS results}
+\end{figure}
+
+The result is consistent with the literature which suggests that the $k-\epsilon $ model better simulates for flows with high Reynold's number whereas $k-\omega $ model better simulates the flow regime with high shear stresses \parencite{fylladitakis_kolmogorov_2018}.\par
+
+\subsection{Scour Study under rigid wall pipe}
+
+The scouring initiation in the bed just below the pipe happens with the fluid phase developing a streamline just beneath the pipe.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/phase_water_case_bed.png}
+	\caption{Concentration plot of phase a (sediment) showing scouring initiation at t=0.5s}
+	\label{fig:Concentration plot of phase a (sediment) showing scouring initiation at t=0.5s}
+\end{figure}
+
+The simulation with turbulence model $k-\omega $ well resolves the first vortex initiated from the top of the pipe whereas the vortex is poorly developed in $k-\epsilon $ model.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/velocity_case_bed.png}
+	\caption{Velocity plot of Fluid phase b (water) at time t=1s}
+	\label{fig:Velocity plot of Fluid phase b (water) at time t=1s}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/velocity_case2_bed.png}
+	\caption{Velocity plot of Fluid phase b (water) at time t=3s}
+	\label{fig:Velocity plot of Fluid phase b (water) at time t=3s}
+\end{figure}
+
+The rate of sediment getting swept by the flow gradually increases for both simulations whereas the rate is higher for the case of $k-\epsilon $ turbulence model which is due to higher production and dissipation rate of turbulent kinetic energy for $k-\epsilon $ model.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/k_case_bed.png}
+	\caption{Turbulent Kinetic Energy Plot at time t=3s}
+	\label{fig:Turbulent Kinetic Energy Plot at time t=3s}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/phase_water2_case_bed.png}
+	\caption{Concentration plot of Fluid phase a (sediment) at time t=3s}
+	\label{fig:Concentration plot of Fluid phase a (sediment) at time t=3s}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/phase_water3_case_bed.png}
+	\caption{Concentration plot of Fluid phase a (sediment) at time t=5s}
+	\label{fig:Concentration plot of Fluid phase a (sediment) at time t=5s}
+\end{figure}
+
+Comparing with the bed scour obtained by the physical experiment performed by \parencite{mao_interaction_1986}, the bed simulated by SedFoam solver with fluid phase turbulence model $k-\omega $ has a better NSE value 0.72 than that of 0.27 produced by bed profile with fluid phase turbulence model $k-\epsilon $.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/bed_profile_case_bed.png}
+	\caption{Comparison plot of Bed Profile obtained at time t=5s, between Sedfoam solver with fluid phase turbulence models $(k-\omega \& k-\varepsilon)$ and physical experiment done by \parencite{mao_interaction_1986}}
+	\label{fig:Comparison plot of Bed Profile}
+\end{figure}
+
+Two phase flow near bed region is characterized large sediment concentration and high shear stresses due to which $k-\omega $ model is better turbulence model for fluid phase.\par
+
+\section{OpenFOAM based CFD-DEM Solver: Free sedimentation of a particle in a static water column }
+
+The release of sediment particles at rest at a height of 0.39m from the base of static water column is characterized by a sharp increase in velocity for the first 50 ms reaching a maximum velocity 100 ms.\par
+
+The position of the sediment particles of sizes 1.5 mm, 2 mm and 2.5 mm obtained from the simulation is given below:\par
+
+Table 6-1 Position of particles' centroid at different time\par
+\begin{tabular}{|p{0.9in}|p{1.1in}|p{1.0in}|p{1.0in}|} \hline 
+	\textbf{Time (t)} & \multicolumn{3}{|p{3.1in}|}{\textbf{Y-position (m) of particle size}} \\ \hline 
+	\textbf{} & \textbf{1.5 mm} & \textbf{2 mm} & \textbf{2.5 mm} \\ \hline 
+	0.01 & 0.3902 & 0.3902 & 0.3902 \\ \hline 
+	0.02 & 0.3892 & 0.3893 & 0.3892 \\ \hline 
+	0.03 & 0.3879 & 0.3880 & 0.3878 \\ \hline 
+	0.04 & 0.3863 & 0.3863 & 0.3860 \\ \hline 
+	0.05 & 0.3845 & 0.3844 & 0.3840 \\ \hline 
+	0.06 & 0.3826 & 0.3823 & 0.3817 \\ \hline 
+	0.07 & 0.3807 & 0.3802 & 0.3793 \\ \hline 
+	0.08 & 0.3789 & 0.3780 & 0.3769 \\ \hline 
+	0.09 & 0.3770 & 0.3757 & 0.3745 \\ \hline 
+	0.10 & 0.3751 & 0.3734 & 0.3720 \\ \hline 
+	0.11 & 0.3732 & 0.3712 & 0.3694 \\ \hline 
+	0.12 & 0.3713 & 0.3689 & 0.3670 \\ \hline 
+	0.13 & 0.3693 & 0.3667 & 0.3645 \\ \hline 
+	0.14 & 0.3674 & 0.3645 & 0.3619 \\ \hline 
+	0.15 & 0.3654 & 0.3622 & 0.3594 \\ \hline 
+	0.16 & 0.3635 & 0.3599 & 0.3569 \\ \hline 
+	0.17 & 0.3615 & 0.3576 & 0.3544 \\ \hline 
+	0.18 & 0.3596 & 0.3554 & 0.3518 \\ \hline 
+	0.19 & 0.3577 & 0.3531 & 0.3492 \\ \hline 
+	0.20 & 0.3557 & 0.3508 & 0.3466 \\ \hline 
+\end{tabular}
+\par % Added \par after tabular environment
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/position_case_freeSed.png}
+	\caption{Position of particle of size 2mm $\left({\rho }_s=1000\right)$ at time steps (t=0, 0.05, 0.1, 0.85, 0.9, 0.95 s) from top left to bottom right}
+	\label{fig:Position of particle}
+\end{figure}
+
+The internal cells just below the boundary of the particle along (-ve Y direction) resulted in the localized increased of pressure due to compression effect in the fluid control volume. The zone of localized increase in pressure is found to be few cm thick. Similarly, a localized decrease in pressure is observed in the cells just above the boundary (+ve Y direction).\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/localised_pressure_case_freeSed.png}
+	\caption{Increased localized pressure just below immersed boundary}
+	\label{fig:Increased localized pressure just below immersed boundary}
+\end{figure}
+
+The position of the particle and the corresponding velocity at different times is plotted in the graph below:\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/position_plot_case_freeSed.png}
+	\caption{Sediment particles' position and velocity at different time}
+	\label{fig:Sediment particles' position and velocity at different time}
+\end{figure}
+
+The settling velocities and the particle sizes are transformed into non-dimensional terms to compare the position of settling velocities obtained from the simulation with the results of free settling experiments for well-rounded particles \parencite{dietrich_settling_1982}.\par
+
+Table 6-2 Non Dimensionalization of particle size and settling velocity\par
+\begin{tabular}{|p{1.0in}|p{0.6in}|p{1.0in}|p{1.2in}|} \hline 
+	\textbf{Equivalent Spherical Diameter (D)} & \textbf{Settling velocity (w)} & \textbf{Non-Dimensional Diameter (D*)} & \textbf{Non-Dimensional Settling Velocity (W*)} \\ \hline 
+	0.0015 & 0.193 & 33109 & 733 \\ \hline 
+	0.002 & 0.228 & 78480 & 1208 \\ \hline 
+	0.0025 & 0.252 & 153281 & 1631 \\ \hline 
+\end{tabular}
+\par % Added \par after tabular environment
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/dimensionless_parameters_case_freeSed.png}
+	\caption{Comparison of settling velocity obtained from the solver with the physical experiments performed for well-rounded particles \parencite{dietrich_settling_1982}}
+	\label{fig:Comparison of settling velocity obtained from the solver with the physical experiments performed for well-rounded particles}
+\end{figure}
+
+\section{Discussion}
+
+\subsection{Comparative Analysis of RANS Turbulence Closure Schemes in SedFoam}
+
+The comparative analysis of the Reynolds-Averaged Navier-Stokes (RANS) turbulence closure schemes in SedFoam highlights distinct performance differences between the $k-\omega$ and $k-\varepsilon$ models in simulating single-phase flow near a solid boundary. The velocity distribution at t=1000s reveals that the $k-\omega$ model produces a steeper velocity gradient near the boundary compared to the $k-\varepsilon$ model, as depicted in Figure 6.1. This indicates a more accurate representation of the boundary layer, aligning with the $k-\omega$ model's recognized strength in capturing flows dominated by high shear stresses \parencite{fylladitakis_kolmogorov_2018}. In contrast, the $k-\varepsilon$ model exhibits higher turbulent kinetic energy (k), as shown in Figure 6.2, suggesting an overestimation of fluctuating velocity components that may not reflect the physical conditions near the boundary. Validation against Direct Numerical Simulation (DNS) results by \parencite{mansour_direct_1999} further supports this observation, with the $k-\omega$ model achieving a Nash-Sutcliffe Efficiency (NSE) value of 0.97, surpassing the $k-\varepsilon$ model's NSE of 0.93 (Figures 6.3 and 6.4). These findings underscore the $k-\omega$ model's superior suitability for wall-bounded shear flows, while the $k-\varepsilon$ model may be better suited for high Reynolds number flows away from boundaries, consistent with existing literature.\par
+
+In the scour study beneath a rigid wall pipe, the $k-\omega$ model again demonstrates enhanced performance over the $k-\varepsilon$ model in resolving sediment transport dynamics and vortex formation. The initiation of scouring, marked by a streamline beneath the pipe at t=0.5s (Figure 6.5), is better captured by the $k-\omega$ model, which effectively resolves the initial vortex from the pipe's top, as seen in velocity plots at t=1s and t=3s (Figures 6.6 and 6.7). The $k-\varepsilon$ model, however, shows a poorly developed vortex, despite predicting a higher sediment transport rate due to its elevated production and dissipation of turbulent kinetic energy (Figures 6.8--6.10). This higher transport rate does not translate to improved accuracy, as evidenced by the comparison with physical experiments by \parencite{mao_interaction_1986}. The bed profile simulated with the $k-\omega$ model achieves an NSE value of 0.72, significantly higher than the 0.27 obtained with the $k-\varepsilon$ model (Figure 6.11). This superior performance in two-phase flows near the bed, characterized by high sediment concentrations and shear stresses, reinforces the $k-\omega$ model's applicability for sediment-laden flows in river systems, where accurate near-bed dynamics are critical.\par
+
+\subsection{OpenFOAM based CFD-DEM Solver: Free sedimentation of a particle in a static water column}
+
+Simulations of cubic particles settling in a water column reveal the solver's capacity to handle key sediment transport processes. A rapid increase in velocity to approximately 100 m/s within the first 50 milliseconds reflects gravitational acceleration, a key factor that dictates the initial path of a particle and its interaction with the surrounding fluid. This consistent pattern across particle sizes (1.5, 2 and 2.5 mm) confirms the reliability of the solver for controlled sedimentation scenarios.\par
+
+The observed localized pressure variations near the particle boundaries provide further insight into the solver's capabilities. Specifically, the increase in pressure below the particle (along with the negative Y-direction) and the corresponding decrease above it (positive Y-direction) aligns with fundamental fluid dynamics principles. These gradients arise from the downward motion of the particle, which compresses the fluid below and creates a rarefaction zone above. The solver's ability to resolve these effects highlights the precision of the body-fitted immersed boundary method, which accurately embeds the cubical particle geometry within the computational fluid domain.\par
+
+A key validation of the solver comes from comparing the simulated settling velocities with experimental data from \parencite{dietrich_settling_1982} for well-rounded particles, adjusted through dimensionless parametrization. Minor deviations observed in dimensionless settling velocities (e.g. \textbf{W*} values of 733, 1208, and 1631 for particle sizes of 1.5 mm, 2 mm and 2.5 mm, respectively) may result from shape differences or the one-way coupling approach employed. In this framework, the fluid influences the motion of the particles via pressure and drag forces, but the particle does not reciprocally affect the fluid flow. Incorporating two-way coupling in future iterations could refine these predictions by accounting for fluid-particle feedback, potentially reducing such discrepancies.\par
+
+The PIMPLE algorithm for fluid flow and DEM for particle motion ensure steady performance, evident in smooth position changes and consistent velocity trends. However, limitations persist one-way coupling ignores the particle impact on the flow, and the lack of multi-particle or boundary interactions restricts the solver to simple cases, missing out on real-world complexities such as bedload or erosion.\par
+
+Despite these limitations, the solver represents a promising advancement in coupling CFD and DEM within the OpenFOAM framework. Its successful simulation of free sedimentation validates the body-fitted immersed boundary method for representing non-spherical particles, an objective central to this research, and establishes a foundation for further development. Future enhancements could include implementing two-way coupling to capture bidirectional fluid-particle interactions, as well as integrating particle-particle and particle-boundary dynamics to simulate more realistic sediment transport scenarios.\par

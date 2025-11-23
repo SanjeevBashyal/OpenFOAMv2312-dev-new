@@ -1,0 +1,288 @@
+g++ -std=c++14 -m64 -pthread -DOPENFOAM=2312 -DWM_DP -DWM_LABEL_SIZE=32 -Wall -Wextra -Wold-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -Wno-invalid-offsetof -Wno-attributes -Wno-unknown-pragmas -O0 -fdefault-inline -ggdb3 -DFULLDEBUG -DNoRepository -ftemplate-depth-100  -I/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude -I/usr/lib/openfoam/openfoam2312/src/fileFormats/lnInclude -I/usr/lib/openfoam/openfoam2312/src/surfMesh/lnInclude -I/usr/lib/openfoam/openfoam2312/src/meshTools/lnInclude -I/usr/lib/openfoam/openfoam2312/src/mesh/blockMesh/lnInclude -I/usr/lib/openfoam/openfoam2312/bashyal/Utilities/lnInclude -I/usr/lib/openfoam/openfoam2312/bashyal/Src/debug/lnInclude -I/usr/lib/openfoam/openfoam2312/bashyal/Utilities/converter/lnInclude -I/usr/include/bullet -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryModels/lnInclude -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryObjects/lnInclude -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryOperationsStatic/lnInclude -iquote. -IlnInclude -I/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude -I/usr/lib/openfoam/openfoam2312/src/OSspecific/POSIX/lnInclude   -fPIC -c contact/gjkContact.C -o /usr/lib/openfoam/openfoam2312/build/linux64GccDPInt32Debug/bashyal/Src/dem/contact/gjkContact.o
+contact/gjkContact.C: In member function ‘Foam::point Bashyal::gjkContact::getWallSupport(const Bashyal::wall&, const Foam::vector&) const’:
+contact/gjkContact.C:82:34: warning: unused variable ‘zMin’ [-Wunused-variable]
+   82 |                     Foam::scalar zMin = center.z() - 0.5 * height;
+      |                                  ^~~~
+contact/gjkContact.C:83:34: warning: unused variable ‘zMax’ [-Wunused-variable]
+   83 |                     Foam::scalar zMax = center.z() + 0.5 * height;
+      |                                  ^~~~
+contact/gjkContact.C: In constructor ‘Bashyal::EPAFace::EPAFace()’:
+contact/gjkContact.C:422:14: warning: ‘Bashyal::EPAFace::valid’ will be initialized after [-Wreorder]
+  422 |         bool valid;
+      |              ^~~~~
+contact/gjkContact.C:421:22: warning:   ‘Foam::scalar Bashyal::EPAFace::distance’ [-Wreorder]
+  421 |         Foam::scalar distance;
+      |                      ^~~~~~~~
+contact/gjkContact.C:424:9: warning:   when initialized here [-Wreorder]
+  424 |         EPAFace() : a(-1), b(-1), c(-1), valid(false), distance(Foam::GREAT) {}
+      |         ^~~~~~~
+contact/gjkContact.C: In member function ‘bool Bashyal::gjkContact::epa(const Simplex&, const Bashyal::particle&, const Bashyal::particle&, Foam::scalar&, Foam::vector&) const’:
+contact/gjkContact.C:504:30: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  504 |             Foam::List<Foam::label2> edges;
+      |                              ^~~~~~
+      |                              label
+contact/gjkContact.C:504:30: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  504 |             Foam::List<Foam::label2> edges;
+      |                              ^~~~~~
+      |                              label
+contact/gjkContact.C:504:36: error: template argument 1 is invalid
+  504 |             Foam::List<Foam::label2> edges;
+      |                                    ^
+In file included from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/wordRe.H:59,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/keyType.H:47,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/Ostream.H:43,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/OSstream.H:42,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/messageStream.H:296,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/error.H:59,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/VectorSpaceI.H:29,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/VectorSpace.H:276,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/Vector.H:48,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/vector.H:43,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/point.H:37,
+                 from contact/gjkContact.H:4,
+                 from contact/gjkContact.C:1:
+contact/gjkContact.C: In lambda function:
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:354:36: error: request for member ‘size’ in ‘edges’, which is of non-class type ‘int’
+  354 |     for (Foam::label i=0; i<(list).size(); ++i)
+      |                                    ^~~~
+contact/gjkContact.C:522:25: note: in expansion of macro ‘forAll’
+  522 |                         forAll(edges, k)
+      |                         ^~~~~~
+contact/gjkContact.C:524:39: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  524 |                             if ((edges[k].first() == b && edges[k].second() == a) ||
+      |                                       ^
+contact/gjkContact.C:524:64: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  524 |                             if ((edges[k].first() == b && edges[k].second() == a) ||
+      |                                                                ^
+contact/gjkContact.C:525:39: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  525 |                                 (edges[k].first() == a && edges[k].second() == b))
+      |                                       ^
+contact/gjkContact.C:525:64: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  525 |                                 (edges[k].first() == a && edges[k].second() == b))
+      |                                                                ^
+contact/gjkContact.C:528:38: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  528 |                                 edges[k] = edges.last();
+      |                                      ^
+contact/gjkContact.C:528:50: error: request for member ‘last’ in ‘edges’, which is of non-class type ‘int’
+  528 |                                 edges[k] = edges.last();
+      |                                                  ^~~~
+contact/gjkContact.C:529:39: error: request for member ‘removeLast’ in ‘edges’, which is of non-class type ‘int’
+  529 |                                 edges.removeLast();
+      |                                       ^~~~~~~~~~
+contact/gjkContact.C:536:35: error: request for member ‘append’ in ‘edges’, which is of non-class type ‘int’
+  536 |                             edges.append(Foam::label2(a, b));
+      |                                   ^~~~~~
+contact/gjkContact.C:536:48: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  536 |                             edges.append(Foam::label2(a, b));
+      |                                                ^~~~~~
+      |                                                label
+contact/gjkContact.C: In member function ‘bool Bashyal::gjkContact::epa(const Simplex&, const Bashyal::particle&, const Bashyal::particle&, Foam::scalar&, Foam::vector&) const’:
+contact/gjkContact.C:550:37: error: ‘begin’ was not declared in this scope
+  550 |             for (const auto& edge : edges)
+      |                                     ^~~~~
+contact/gjkContact.C:550:37: note: suggested alternatives:
+In file included from /usr/include/c++/12/string:52,
+                 from /usr/include/c++/12/bits/locale_classes.h:40,
+                 from /usr/include/c++/12/bits/ios_base.h:41,
+                 from /usr/include/c++/12/ios:42,
+                 from /usr/include/c++/12/ostream:38,
+                 from /usr/include/c++/12/iostream:39,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/direction.H:43,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/int8.H:44,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/int.H:40,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/label.H:42,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/doubleFloat.H:32,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/floatScalar.H:42,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/scalar.H:42,
+                 from /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/vector.H:42:
+/usr/include/c++/12/bits/range_access.h:114:37: note:   ‘std::begin’
+  114 |   template<typename _Tp> const _Tp* begin(const valarray<_Tp>&) noexcept;
+      |                                     ^~~~~
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:162:16: note:   ‘stdFoam::begin’
+  162 | constexpr auto begin(const C& c) -> decltype(c.begin())
+      |                ^~~~~
+In file included from /usr/include/boost/mpl/list/aux_/begin_end.hpp:17,
+                 from /usr/include/boost/mpl/list/list0.hpp:27,
+                 from /usr/include/boost/mpl/list/list10.hpp:18,
+                 from /usr/include/boost/mpl/list/list20.hpp:18,
+                 from /usr/include/boost/mpl/list.hpp:36,
+                 from /usr/include/boost/math/policies/policy.hpp:9,
+                 from /usr/include/boost/math/special_functions/math_fwd.hpp:29,
+                 from /usr/include/boost/math/special_functions/sign.hpp:17,
+                 from /usr/include/boost/lexical_cast/detail/inf_nan.hpp:34,
+                 from /usr/include/boost/lexical_cast/detail/converter_lexical_streams.hpp:63,
+                 from /usr/include/boost/lexical_cast/detail/converter_lexical.hpp:54,
+                 from /usr/include/boost/lexical_cast/try_lexical_convert.hpp:44,
+                 from /usr/include/boost/lexical_cast.hpp:32,
+                 from /usr/include/CGAL/exceptions.h:28,
+                 from /usr/include/CGAL/assertions_impl.h:29,
+                 from /usr/include/CGAL/assertions.h:334,
+                 from /usr/include/CGAL/basic.h:26,
+                 from /usr/include/CGAL/Cartesian/Cartesian_base.h:20,
+                 from /usr/include/CGAL/Simple_cartesian.h:20,
+                 from /usr/include/CGAL/Exact_predicates_exact_constructions_kernel.h:20,
+                 from /usr/lib/openfoam/openfoam2312/bashyal/Src/debug/lnInclude/debugClass.H:10,
+                 from /usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryObjects/lnInclude/geomObject.H:7,
+                 from /usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryObjects/lnInclude/boundary.H:5,
+                 from lnInclude/particle.H:6,
+                 from contact/gjkContact.H:7:
+/usr/include/boost/mpl/begin_end_fwd.hpp:22:38: note:   ‘boost::mpl::begin’
+   22 | template< typename Sequence > struct begin;
+      |                                      ^~~~~
+In file included from /usr/include/boost/range/functions.hpp:18,
+                 from /usr/include/boost/range/iterator_range_core.hpp:38,
+                 from /usr/include/boost/lexical_cast.hpp:30:
+/usr/include/boost/range/begin.hpp:110:61: note:   ‘boost::range_adl_barrier::begin’
+  110 | inline BOOST_DEDUCED_TYPENAME range_iterator<const T>::type begin( const T& r )
+      |                                                             ^~~~~
+In file included from /usr/include/CGAL/Iterator_range.h:17,
+                 from /usr/include/CGAL/iterator.h:26,
+                 from /usr/include/CGAL/N_step_adaptor_derived.h:20,
+                 from /usr/include/CGAL/Polyhedron_3.h:23,
+                 from /usr/lib/openfoam/openfoam2312/bashyal/Src/debug/lnInclude/debugClass.H:12:
+/usr/include/boost/foreach.hpp:696:1: note:   ‘boost::foreach_detail_::begin’
+  696 | begin(auto_any_t col, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
+      | ^~~~~
+In file included from /usr/include/boost/fusion/adapted/boost_tuple/detail/convert_impl.hpp:12,
+                 from /usr/include/boost/fusion/adapted/boost_tuple.hpp:20,
+                 from /usr/include/boost/iterator/zip_iterator.hpp:20,
+                 from /usr/include/CGAL/Triangulation_2.h:46,
+                 from /usr/include/CGAL/Constrained_triangulation_2.h:25,
+                 from /usr/include/CGAL/Nef_polyhedron_3.h:57,
+                 from /usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryObjects/lnInclude/boundary.H:8:
+/usr/include/boost/fusion/sequence/intrinsic/begin.hpp:92:5: note:   ‘boost::fusion::begin’
+   92 |     begin(Sequence const& seq)
+      |     ^~~~~
+In file included from /usr/include/boost/fusion/sequence/intrinsic/begin.hpp:14:
+/usr/include/boost/fusion/sequence/intrinsic_fwd.hpp:62:16: note:   ‘boost::fusion::result_of::begin’
+   62 |         struct begin;
+      |                ^~~~~
+contact/gjkContact.C:550:37: error: ‘end’ was not declared in this scope
+  550 |             for (const auto& edge : edges)
+      |                                     ^~~~~
+contact/gjkContact.C:550:37: note: suggested alternatives:
+/usr/include/c++/12/bits/range_access.h:116:37: note:   ‘std::end’
+  116 |   template<typename _Tp> const _Tp* end(const valarray<_Tp>&) noexcept;
+      |                                     ^~~
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:186:16: note:   ‘stdFoam::end’
+  186 | constexpr auto end(const C& c) -> decltype(c.end())
+      |                ^~~
+/usr/include/boost/mpl/begin_end_fwd.hpp:23:38: note:   ‘boost::mpl::end’
+   23 | template< typename Sequence > struct end;
+      |                                      ^~~
+In file included from /usr/include/boost/range/functions.hpp:19:
+/usr/include/boost/range/end.hpp:104:61: note:   ‘boost::range_adl_barrier::end’
+  104 | inline BOOST_DEDUCED_TYPENAME range_iterator<const T>::type end( const T& r )
+      |                                                             ^~~
+/usr/include/boost/foreach.hpp:736:1: note:   ‘boost::foreach_detail_::end’
+  736 | end(auto_any_t, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
+      | ^~~
+In file included from /usr/include/boost/fusion/container/list/cons.hpp:17,
+                 from /usr/include/boost/fusion/iterator/segmented_iterator.hpp:14,
+                 from /usr/include/boost/fusion/sequence/intrinsic/detail/segmented_begin.hpp:12,
+                 from /usr/include/boost/fusion/sequence/intrinsic/begin.hpp:18:
+/usr/include/boost/fusion/sequence/intrinsic/end.hpp:92:5: note:   ‘boost::fusion::end’
+   92 |     end(Sequence const& seq)
+      |     ^~~
+/usr/include/boost/fusion/sequence/intrinsic_fwd.hpp:68:16: note:   ‘boost::fusion::result_of::end’
+   68 |         struct end;
+      |                ^~~
+contact/gjkContact.C: In member function ‘bool Bashyal::gjkContact::epaParticleWall(const Simplex&, const Bashyal::particle&, const Bashyal::wall&, Foam::scalar&, Foam::vector&) const’:
+contact/gjkContact.C:604:30: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  604 |             Foam::List<Foam::label2> edges;
+      |                              ^~~~~~
+      |                              label
+contact/gjkContact.C:604:30: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  604 |             Foam::List<Foam::label2> edges;
+      |                              ^~~~~~
+      |                              label
+contact/gjkContact.C:604:36: error: template argument 1 is invalid
+  604 |             Foam::List<Foam::label2> edges;
+      |                                    ^
+contact/gjkContact.C: In lambda function:
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:354:36: error: request for member ‘size’ in ‘edges’, which is of non-class type ‘int’
+  354 |     for (Foam::label i=0; i<(list).size(); ++i)
+      |                                    ^~~~
+contact/gjkContact.C:614:25: note: in expansion of macro ‘forAll’
+  614 |                         forAll(edges, k)
+      |                         ^~~~~~
+contact/gjkContact.C:616:39: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  616 |                             if ((edges[k].first() == b && edges[k].second() == a) ||
+      |                                       ^
+contact/gjkContact.C:616:64: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  616 |                             if ((edges[k].first() == b && edges[k].second() == a) ||
+      |                                                                ^
+contact/gjkContact.C:617:39: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  617 |                                 (edges[k].first() == a && edges[k].second() == b))
+      |                                       ^
+contact/gjkContact.C:617:64: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  617 |                                 (edges[k].first() == a && edges[k].second() == b))
+      |                                                                ^
+contact/gjkContact.C:619:38: error: invalid types ‘int[Foam::label {aka int}]’ for array subscript
+  619 |                                 edges[k] = edges.last();
+      |                                      ^
+contact/gjkContact.C:619:50: error: request for member ‘last’ in ‘edges’, which is of non-class type ‘int’
+  619 |                                 edges[k] = edges.last();
+      |                                                  ^~~~
+contact/gjkContact.C:620:39: error: request for member ‘removeLast’ in ‘edges’, which is of non-class type ‘int’
+  620 |                                 edges.removeLast();
+      |                                       ^~~~~~~~~~
+contact/gjkContact.C:625:43: error: request for member ‘append’ in ‘edges’, which is of non-class type ‘int’
+  625 |                         if (!found) edges.append(Foam::label2(a, b));
+      |                                           ^~~~~~
+contact/gjkContact.C:625:56: error: ‘label2’ is not a member of ‘Foam’; did you mean ‘label’?
+  625 |                         if (!found) edges.append(Foam::label2(a, b));
+      |                                                        ^~~~~~
+      |                                                        label
+contact/gjkContact.C: In member function ‘bool Bashyal::gjkContact::epaParticleWall(const Simplex&, const Bashyal::particle&, const Bashyal::wall&, Foam::scalar&, Foam::vector&) const’:
+contact/gjkContact.C:635:37: error: ‘begin’ was not declared in this scope
+  635 |             for (const auto& edge : edges)
+      |                                     ^~~~~
+contact/gjkContact.C:635:37: note: suggested alternatives:
+/usr/include/c++/12/bits/range_access.h:114:37: note:   ‘std::begin’
+  114 |   template<typename _Tp> const _Tp* begin(const valarray<_Tp>&) noexcept;
+      |                                     ^~~~~
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:162:16: note:   ‘stdFoam::begin’
+  162 | constexpr auto begin(const C& c) -> decltype(c.begin())
+      |                ^~~~~
+/usr/include/boost/mpl/begin_end_fwd.hpp:22:38: note:   ‘boost::mpl::begin’
+   22 | template< typename Sequence > struct begin;
+      |                                      ^~~~~
+/usr/include/boost/range/begin.hpp:110:61: note:   ‘boost::range_adl_barrier::begin’
+  110 | inline BOOST_DEDUCED_TYPENAME range_iterator<const T>::type begin( const T& r )
+      |                                                             ^~~~~
+/usr/include/boost/foreach.hpp:696:1: note:   ‘boost::foreach_detail_::begin’
+  696 | begin(auto_any_t col, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
+      | ^~~~~
+/usr/include/boost/fusion/sequence/intrinsic/begin.hpp:92:5: note:   ‘boost::fusion::begin’
+   92 |     begin(Sequence const& seq)
+      |     ^~~~~
+/usr/include/boost/fusion/sequence/intrinsic_fwd.hpp:62:16: note:   ‘boost::fusion::result_of::begin’
+   62 |         struct begin;
+      |                ^~~~~
+contact/gjkContact.C:635:37: error: ‘end’ was not declared in this scope
+  635 |             for (const auto& edge : edges)
+      |                                     ^~~~~
+contact/gjkContact.C:635:37: note: suggested alternatives:
+/usr/include/c++/12/bits/range_access.h:116:37: note:   ‘std::end’
+  116 |   template<typename _Tp> const _Tp* end(const valarray<_Tp>&) noexcept;
+      |                                     ^~~
+/usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/stdFoam.H:186:16: note:   ‘stdFoam::end’
+  186 | constexpr auto end(const C& c) -> decltype(c.end())
+      |                ^~~
+/usr/include/boost/mpl/begin_end_fwd.hpp:23:38: note:   ‘boost::mpl::end’
+   23 | template< typename Sequence > struct end;
+      |                                      ^~~
+/usr/include/boost/range/end.hpp:104:61: note:   ‘boost::range_adl_barrier::end’
+  104 | inline BOOST_DEDUCED_TYPENAME range_iterator<const T>::type end( const T& r )
+      |                                                             ^~~
+/usr/include/boost/foreach.hpp:736:1: note:   ‘boost::foreach_detail_::end’
+  736 | end(auto_any_t, type2type<T *, C> *, boost::mpl::true_ *) // null-terminated C-style strings
+      | ^~~
+/usr/include/boost/fusion/sequence/intrinsic/end.hpp:92:5: note:   ‘boost::fusion::end’
+   92 |     end(Sequence const& seq)
+      |     ^~~
+/usr/include/boost/fusion/sequence/intrinsic_fwd.hpp:68:16: note:   ‘boost::fusion::result_of::end’
+   68 |         struct end;
+      |                ^~~
+make: *** [/usr/lib/openfoam/openfoam2312/wmake/rules/General/transform:38: /usr/lib/openfoam/openfoam2312/build/linux64GccDPInt32Debug/bashyal/Src/dem/contact/gjkContact.o] Error 1

@@ -1,0 +1,215 @@
+\chapter{ LITERATURE REVIEW}
+\label{chapter3}
+\section{Fluid Modelling using Navier--Stokes Equations}
+
+The dynamics of the carrier fluid in sediment transport are governed by the incompressible Navier--Stokes and mass conservation equations, which express momentum balance with pressure, viscous and body forces together with the divergence-free constraint. In practice, these equations are discretized using finite volume/finite difference/finite element methods to resolve complex domains typical of environmental flows \parencite{moukalled_finite_2016}. The Navier--Stokes framework underpins all subsequent turbulence closures and multiphase modelling choices used in sediment transport \parencite{wilcox_turbulence_2010}.
+
+\textbf{Continuity (general):}\par
+\begin{equation}
+	\frac{\partial \rho}{\partial t}+\nabla \cdot(\rho \boldsymbol{u})=0
+	\label{eqn:3_ns_cont_gen}
+\end{equation}
+\equations{Continuity Equation}
+
+For incompressible flow (\(\rho=\) const.):\par
+\begin{equation}
+	\nabla \cdot \boldsymbol{u}=0
+	\label{eqn:3_ns_cont_incomp}
+\end{equation}
+\equations{Incompressible Continuity Equation}
+
+\textbf{Momentum (incompressible):}\par
+\begin{equation}
+	\frac{\partial \boldsymbol{u}}{\partial t}+(\boldsymbol{u}\cdot \nabla)\boldsymbol{u}
+	=-\frac{1}{\rho}\nabla p+\nu \nabla^2 \boldsymbol{u}+\boldsymbol{f}
+	\label{eqn:3_ns_mom}
+\end{equation}
+\equations{Navier--Stokes Momentum Equation}
+
+\section{Turbulence Models using RANS}
+
+Because resolving all turbulent scales is prohibitively expensive for engineering-scale problems, Reynolds-averaged Navier--Stokes (RANS) closures are widely used. Two-equation eddy-viscosity models, notably \(k\text{-}\varepsilon\) \parencite{launder_numerical_1974,jones_prediction_1972} and \(k\text{-}\omega\) \parencite{wilcox_reassessment_1988}, and the blended SST model \parencite{menter_two-equation_1994}, remain standard choices in hydraulics. Reviews highlight their strengths, limitations, and recent advances including non-linear eddy-viscosity, Reynolds-stress transport models, and data-informed closures \parencite{alfonsi_reynolds-averaged_2009,durbin_recent_2018,duraisamy_turbulence_2019}. In sediment-laden flows, turbulence attenuation, density stratification, and particle-induced stresses modify near-bed structures, requiring careful selection and calibration of closures within the Navier--Stokes framework.
+
+\textbf{Reynolds decomposition:}\par
+\begin{equation}
+	\begin{aligned}
+		\boldsymbol{u}&=\overline{\boldsymbol{u}}+\boldsymbol{u}' \\
+		p&=\overline{p}+p'
+	\end{aligned}
+	\label{eqn:3_rans_decomp}
+\end{equation}
+\equations{Reynolds Decomposition}
+
+For incompressible flows the RANS system reads:\par
+\begin{equation}
+	\nabla \cdot \overline{\boldsymbol{u}}=0
+	\label{eqn:3_rans_cont}
+\end{equation}
+\equations{RANS Continuity Equation}
+
+\begin{equation}
+	\rho\left(\frac{\partial \overline{\boldsymbol{u}}}{\partial t}+(\overline{\boldsymbol{u}}\cdot \nabla)\overline{\boldsymbol{u}}\right)
+	=-\nabla \overline{p}+\mu \nabla^2\overline{\boldsymbol{u}}-\nabla \cdot \left(\rho \overline{\boldsymbol{u}'\boldsymbol{u}'}\right)
+	\label{eqn:3_rans_mom}
+\end{equation}
+\equations{RANS Momentum Equation}
+
+The eddy-viscosity (Boussinesq) closure relates Reynolds stresses to mean strain:\par
+\begin{equation}
+	\rho \overline{\boldsymbol{u}'\boldsymbol{u}'}=-\mu_t\left(\nabla \overline{\boldsymbol{u}}+\nabla \overline{\boldsymbol{u}}^{T}\right)
+	+\frac{2}{3}\rho k \boldsymbol{I}
+	\label{eqn:3_boussinesq}
+\end{equation}
+\equations{Boussinesq Hypothesis}
+
+with modelled eddy viscosity, e.g.\ for \(k\text{-}\varepsilon\) and \(k\text{-}\omega\):\par
+\begin{equation}
+	\mu_t=\rho C_\mu \frac{k^2}{\varepsilon}
+	\quad\text{and}\quad
+	\mu_t=\rho \frac{k}{\omega}
+	\label{eqn:3_mut_models}
+\end{equation}
+\equations{Eddy Viscosity for \(k\text{-}\varepsilon\) and \(k\text{-}\omega\)}
+
+\section{Sediment Transport Model}
+
+Sediment transport is a critical process in geomorphology, hydrology, and environmental engineering, influencing river dynamics, coastal morpho dynamics, and aquatic ecosystems. Over the decades, various sediment transport models have been developed to predict sediment movement and deposition under diverse environmental conditions.\par
+
+\subsection{Depth-integrated and concentration-based formulations}
+
+Two classical Eulerian formulations are commonly used. Depth-integrated models couple shallow-water equations with the Exner bed evolution equation to capture bedload-driven morphology at large scales; they are efficient but rely on closure relations for transport capacity and bed resistance \parencite{papanicolaou_sediment_2008,andualem_erosion_2023}. Concentration-based advection--diffusion models resolve suspended load as a transported scalar with settling and drift-flux terms, often closed with empirical settling relations and near-bed reference concentrations \parencite{van_rijn_sediment_1984,leo_c_van_rijn_sediment_1984-1,olsen_openfoam_2023}. Empirical or semi-empirical settling laws such as \parencite{dietrich_settling_1982,rubey_settling_1933} are frequently used to parameterize particle size/shape effects.
+
+\textbf{Suspended-load advection--diffusion with settling:}\par
+\begin{equation}
+	\frac{\partial C}{\partial t}+\nabla \cdot \left(\boldsymbol{u} C\right)
+	=\nabla \cdot \left(D_t \nabla C\right)-\frac{\partial \left(w_s C\right)}{\partial z}
+	\label{eqn:3_advdiff_settling}
+\end{equation}
+\equations{Advection--Diffusion Equation with Settling Velocity}
+
+\textbf{Bed evolution (Exner) equation:}\par
+\begin{equation}
+	\frac{\partial z_b}{\partial t}+\frac{1}{1-\lambda_p}\nabla \cdot \boldsymbol{q}_s=0
+	\label{eqn:3_exner}
+\end{equation}
+\equations{Exner Bed Evolution Equation}
+
+\subsection{Historical Developments}
+
+\parencite{a_shields_application_1936} pioneered sediment transport modeling by introducing the concept of incipient motion, linking critical shear stress to particle movement, and accounting for turbulence as a key factor influencing sediment stability. \parencite{e_meyer-peter_formulas_1948} developed a widely recognized bed load transport formula, which quantitatively relates sediment transport rates to flow conditions, incorporating shear stress as the driving mechanism. \parencite{einstein_bed-load_1950} introduced a probabilistic approach in the variability in sediment movement but remains limited in addressing multi-scale interactions and extreme flow events. \parencite{r_a_bagnold_approach_1966} established that sediment transport rates are proportional to the flow's stream power, emphasizing the role of energy dissipation in mobilizing and transporting particles.\par
+
+\parencite{frank_engelund_monograph_1967} developed a total load sediment transport formula, demonstrating that sediment transport rates are proportional to flow velocity raised to the fifth power in alluvial streams. \parencite{leo_c_van_rijn_sediment_1984} demonstrated that the critical shear stress for particle movement increases with finer sediment sizes, as detailed in Part I. In Part II and Part III, he quantified suspended load and bed load transport rates, showing that suspended load transport depends significantly on turbulence intensity and sediment concentration profiles, while bed load transport is primarily influenced by flow velocity and particle size.\par
+
+By combining granular flow theories with hydrodynamic equations, \parencite{james_t_jenkins_collisional_1998} % Original text: (Jenkins, and Hanes (1988)), BibTeX year is 1998
+improved wave-induced sediment transport simulations.\par
+
+Building upon these foundational studies, various advanced modeling approaches have been developed to simulate sediment transport with greater accuracy and applicability to complex flow and sediment dynamics.\par
+
+\subsection{Eulerian Eulerian Model}
+
+The Eulerian-Eulerian model for sediment transport conceptualizes both the fluid and sediment phases as interpenetrating continua, allowing the simultaneous solution of separate conservation equations for mass and momentum for each phase. This approach is particularly effective for modeling scenarios where the interactions between the fluid and sediment are extensive, such as in high sediment concentration flows. The model incorporates drag forces and granular stresses to represent the momentum exchange and mechanical interactions between the phases. \parencite{chauchat_sedfoam-20_2017} implemented a popular two-phase solver named SedFoam incorporating granular stresses to simulate scour dynamics, demonstrating rapid initial scour development that stabilizes at equilibrium.\par
+
+\subsection{Eulerian Lagrangian Model}
+
+The Eulerian-Lagrangian model of sediment transport combines continuum-based fluid dynamics with discrete particle tracking, offering a CFD-DEM framework for simulating interactions between fluid flow and individual sediment particles. \parencite{hager_parallel_2014} introduced a method that integrated the finite-volume-based CFD solver OpenFOAM with the DEM solver LIGGGHTS. Their approach, however, was initially restricted to simulations involving spherical particles or clusters composed of spheres. While the assumption of spherical particles simplifies and enhances the efficiency of DEM implementation, it also imposes limitations on the code's versatility. To address this, various approaches enabling CFD-DEM and DEM simulations involving non-spherical or arbitrary-shaped solids have been proposed, including hybrid immersed-boundary formulations and shape-resolved contact models \parencite{zhong_demcfd-dem_2016,isoz_hybrid_2022,matuttis_understanding_2014}.
+\par
+
+\cite{studenik_openhfdib-dem_2024} produced a CFD-DEM solver implemented on OpenFOAM v8 for arbitrary shaped particles using hybrid fictitious domain immersed boundary method (HFDIB).\par
+
+\subsection{Lagrangian Lagrangian Model}
+
+The Lagrangian-Lagrangian model for sediment transport tracks both fluid parcels and sediment particles as discrete entities, enabling detailed simulation of particle-particle and particle-fluid interactions. Smoothed particle hydrodynamics (SPH) and the moving particle semiimplicit (MPS) method are used to simulate multi-phase flow using the approach \parencite{fu_improved_2016}.\par
+
+\section{Development of Turbulence based Sediment Transport Models}
+
+Building on the Navier--Stokes foundation, RANS closures have been extensively adapted to sediment-laden flows. Reviews summarize current practice and challenges for sediment transport modelling across scales, including the role of turbulence damping, hindered settling, density stratification and particle-induced stresses \parencite{papanicolaou_sediment_2008,alfonsi_reynolds-averaged_2009,durbin_recent_2018}. Two-phase Eulerian--Eulerian solvers such as SedFoam integrate \(k\text{-}\varepsilon\) and \(k\text{-}\omega\) closures to model sheet flow, scour and suspended load \parencite{chauchat_sedfoam-20_2017}. Recent data-driven corrections to RANS closures for particle-laden flows demonstrate notable accuracy gains over baseline models \parencite{stocker_dns-based_2024}. For unresolved CFD-DEM, both RANS-DEM and LES-DEM have been compared; dynamic LES closures often outperform static ones under coarse grids, while RANS-DEM may suffice at very dilute loadings \parencite{jaiswal_evaluation_2022}.
+
+\section{Sediment Phase Modelling}
+
+\subsection{Eulerian Approach}
+
+The Eulerian approach models sediments as a continuous phase, using averaged equations to describe sediment concentration and flow fields within a fixed control volume. This approach considers the sediment phase as a continuum, focusing on its impact on carrier flow turbulence through drag forces and density stratification effects \parencite{chauchat_sedfoam-20_2017}.\par
+
+Sediment phase continuity equation:\par
+\begin{equation}
+	\frac{\partial \alpha}{\partial t}+\nabla \cdot\left(\alpha \mathbf{u}^a\right)=0
+	\label{eqn:3_1}
+\end{equation}
+\equations{Sediment Phase Continuity Equation}
+
+Sediment phase momentum equation:\par
+\begin{equation}
+	\frac{\partial\left(\rho^a \alpha \mathbf{u}^a\right)}{\partial t}+\nabla \cdot\left(\rho^a \alpha \mathbf{u}^a \otimes \mathbf{u}^a\right)=-\alpha \nabla p+\alpha \mathbf{f}-\nabla \tilde{p}^a+\nabla \cdot \boldsymbol{\tau}^a+\alpha \rho^a \mathbf{g}+\alpha \beta K\left(\mathbf{u}^b-\mathbf{u}^a\right)-S_{U S} \beta K \nu_t^b \nabla \alpha
+	\label{eqn:3_2}
+\end{equation}
+\equations{Sediment Phase Momentum Equation}
+
+Fluid phase continuity equation:\par
+\begin{equation}
+	\frac{\partial \beta}{\partial t}+\nabla \cdot\left(\beta \mathbf{u}^b\right)=0
+	\label{eqn:3_f_cont}
+\end{equation}
+\equations{Fluid Phase Continuity Equation}
+
+Fluid phase momentum equation:\par
+\begin{equation}
+	\frac{\partial\left(\rho^b \beta \mathbf{u}^b\right)}{\partial t}+\nabla \cdot\left(\rho^b \beta \mathbf{u}^b \otimes \mathbf{u}^b\right)=-\beta \nabla p+\beta \mathbf{f}+\nabla \cdot \boldsymbol{\tau}^b+\beta \rho^b \mathbf{g}-\alpha \beta K\left(\mathbf{u}^b-\mathbf{u}^a\right)+S_{U S} \beta K \nu_t^b \nabla \alpha
+	\label{eqn:3_f_mom}
+\end{equation}
+\equations{Fluid Phase Momentum Equation}
+
+\subsection{Lagrangian Approach}
+
+The Lagrangian approach tracks individual sediment particles, capturing their trajectories and interactions with the surrounding flow field. \cite{baharvand_developing_2023} introduces a three-dimensional stochastic Lagrangian particle tracking model. It solves the discrete advection-dispersion equation, using empirical dispersion equations, including a conditional equation for vertical dispersion near the water surface. \cite{huai_predicting_2019} proposes a random displacement model (RDM) based on the Lagrangian approach for vegetated flows. It introduces an integrated sediment diffusion coefficient, validated against the Rouse formula and experimental measurements, suitable for low-sediment-concentration flows with emergent and submerged vegetation.\par
+
+\textbf{Particle equations of motion (representative):}\par
+\begin{equation}
+	m_p\frac{d\boldsymbol{v}_p}{dt}
+	=\boldsymbol{F}_{\mathrm{drag}}+\boldsymbol{F}_{\mathrm{grav}}+\boldsymbol{F}_{\mathrm{coll}}
+	\label{eqn:3_lagrange_particle_mom}
+\end{equation}
+\equations{Newton's Second Law for a Particle}
+
+with drag and gravity/buoyancy, e.g.\ \parencite{el-emam_theories_2021}:\par
+\begin{equation}
+	\boldsymbol{F}_{\mathrm{drag}}=\frac{1}{2}\rho_f C_D A_p\left(\boldsymbol{u}_f-\boldsymbol{v}_p\right)\left|\boldsymbol{u}_f-\boldsymbol{v}_p\right|,
+	\quad
+	\boldsymbol{F}_{\mathrm{grav}}=m_p \boldsymbol{g}-\rho_f V_p \boldsymbol{g}.
+	\label{eqn:3_drag_buoyancy}
+\end{equation}
+\equations{Representative Drag and Gravity/Buoyancy Forces}
+
+\section{Dietrich's Settling Velocity Experiment}
+
+\cite{dietrich_settling_1982} synthesized data from 14 previous experimental studies to develop an empirical equation for estimating settling velocity. The settling velocity analysis under free sendimentation was conducted using four nondimensional parameters: $D*$, the dimensionless settling velocity $(W*)$, Corey shape factor, and Powers roundness index. This approach allowed for a standardized comparison across different particle types and fluid conditions. For instance, the study found that for high $D*$ (large or dense particles), changes in roundness and shape factors have similar magnitude effects on settling velocity, though roundness varies less for naturally occurring grains, making shape a more significant control. One notable finding was that for a typical coarse sand particle with a Powers roundness of 3.5 and a Corey shape factor of 0.7, the settling velocity is about 0.68 that of a sphere of the same $D*$. This indicates that shape and roundness both contribute to reducing settling velocity compared to ideal spherical particles, with shape effects being more variable and thus more influential.\par
+
+\section{Developments of CFD-DEM Solvers}
+
+\subsection{SediFoam}
+
+SediFoam is an open-source, CFD--DEM solver developed for modeling particle-laden flows with a focus on sediment transport applications. Built on the capabilities of OpenFOAM for computational fluid dynamics (CFD) and LAMMPS for discrete element method (DEM) particle dynamics, SediFoam allows for the simulation of three-dimensional sediment transport on a large scale. It supports parallel computing, enabling it to handle complex, high-particle-count cases with millions of particles across hundreds of CPU cores.\par
+
+\subsection{CFDEM by DCS Computing}
+
+The CFDEM{\circledR} project, maintained by CFDEMresearch and DCS Computing based on Austria, focuses on high-performance, open-source CFD-DEM coupling for fluid mechanics and particle science. It integrates Computational Fluid Dynamics (CFD) implemented in OpenFOAM with Discrete Element Method (DEM) implemented in LIGGGHTS{\circledR} DEM engine, facilitating the simulation of interactions between fluids and particle systems.\par
+
+Turbulence closure models are mathematical models used to represent the effects of turbulence in fluid flow simulations. Turbulence is inherently chaotic and involves a wide range of interacting scales, making it difficult to model directly. Closure models provide a way to "close" the system of equations by approximating the effects of the smaller, unresolved scales of turbulence on the larger, resolved scales \parencite{wilcox_turbulence_2010,alfonsi_reynolds-averaged_2009,durbin_recent_2018}.
+Recent advancements in turbulence closure models have significantly improved the predictive capabilities for complex turbulent flows, particularly through the development of second-moment closures, non-linear eddy-viscosity approaches, and hybrid RANS--LES methods \parencite{durbin_recent_2018}.\par
+
+In turbulent flows, the Navier-Stokes equations are often averaged or filtered to derive models such as RANS or LES, which are essential for capturing the effects of turbulence on sediment transport in river systems.\par
+
+\subsection{OpenHFDIB-DEM}
+
+The OpenHFDIB-DEM solver represents a significant advancement in the simulation of fluid-solid flows involving irregularly shaped particles. \cite{isoz_hybrid_2022} developed a hybrid Fictitious Domain-Immersed Boundary (HFDIB) method combined with the PIMPLE algorithm to address the challenges of modeling interactions between fluid and complex solid geometries. The HFDIB method allows for accurate representation of irregularly shaped solids by embedding them within the computational mesh, avoiding the need for complex body-fitted meshes. \parencite{studenik_openhfdib-dem_2024} introduced OpenHFDIB-DEM, a solver within OpenFOAM for CFD-DEM simulations involving arbitrarily shaped particles where the particles are represented by a set of mesh cells.\par
+
+\section{Cross-comparison and Motivation for Body-fitted CFD--DEM}
+
+\textbf{Depth-integrated and concentration-based models} are efficient and robust for reach- to basin-scale predictions. However, they rely on empirical closures for transport capacity, settling, and turbulence-sediment interaction, which limits their fidelity in strongly inhomogeneous near-bed flows where local particle-fluid interactions dominate transport mechanisms \parencite{papanicolaou_sediment_2008,van_rijn_sediment_1984,leo_c_van_rijn_sediment_1984,olsen_openfoam_2023}.
+
+\textbf{Eulerian--Eulerian two-phase models} effectively capture feedback between phases and granular rheology, making them particularly suitable for dense sheet flows and scour applications. Nevertheless, these models require closure relations for interphase and granular stresses, and their continuum formulation may smear particle-scale geometry, limiting their ability to resolve individual particle kinematics \parencite{chauchat_sedfoam-20_2017}.
+
+\textbf{Eulerian--Lagrangian CFD--DEM approaches}, including unresolved, immersed boundary (IB), and hybrid fictitious domain-immersed boundary (HFDIB) methods, resolve particle trajectories and collisions while employing turbulence models for the carrier flow. Unresolved approaches offer computational scalability but approximate near-particle hydrodynamics through closure relations. In contrast, hybrid IB and HFDIB methods improve shape representation and near-surface coupling by better resolving the fluid-solid interface \parencite{hager_parallel_2014,zhong_demcfd-dem_2016,isoz_hybrid_2022,studenik_openhfdib-dem_2024,jaiswal_evaluation_2022}.
+
+\textbf{Lagrangian--Lagrangian methods} such as smoothed particle hydrodynamics (SPH) and moving particle semi-implicit (MPS) provide fully particle-based descriptions of both fluid and solid phases. While these approaches offer rich detail for violent transients and complex particle interactions, they incur high computational costs and face significant challenges in turbulence modelling and boundary condition implementation \parencite{fu_improved_2016}.
+
+Overall, for problems where particle shape, orientation, and near-contact hydrodynamics control entrainment, collisions, and mobility, CFD--DEM formulations with mesh conforming the particle geometries provide a decisive advantage. These methods resolve fluid--solid momentum exchange over realistic particle geometries while retaining algorithmic scalability through immersed techniques \parencite{studenik_openhfdib-dem_2024}. These benefits motivate the present thesis focus on body-conformal CFD--DEM for sediment transport with irregular grains in complex hydraulic conditions.

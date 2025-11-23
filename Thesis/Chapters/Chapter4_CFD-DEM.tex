@@ -1,0 +1,88 @@
+\chapter{CFD-DEM IMPLEMENTATION IN OPENFOAM} 
+\label{chapter4} 
+
+The CFD-DEM solver, \texttt{fineDEMfoam}, leverages the OpenFOAM framework to simulate fluid-particle interactions using an Immersed Boundary Method (IBM). The core of the implementation focuses on mesh generation, accurate geometry intersection, and the two-way coupling between the Eulerian fluid phase and the Lagrangian solid phase.
+
+\section{Geometry and Meshing}
+Mesh generation forms the foundation of the CFD-DEM simulation. The solver utilizes OpenFOAM's standard finite volume mesh classes (`fvMesh`) to discretize the computational domain.
+
+\subsection{Computational Domain}
+The flow domain is discretized into a grid of hexahedral cells. Unlike body-fitted meshes, the grid in this IBM approach does not conform to the particle boundaries. Instead, the mesh remains static (or moves independently), and the presence of particles is accounted for by modifying the governing equations in the cells intersected by the solid phase.
+
+\section{Boundary Interpretation and Field Mapping}
+A critical component of the IBM implementation is the mapping of the discrete particle geometry onto the Eulerian grid. This is handled by the `calculateIBM.H` routine.
+
+\subsection{Solid Volume Fraction ($\epsilon$)}
+The solid volume fraction field, $\epsilon$, represents the ratio of solid volume to cell volume in each computational cell. It serves as a mask to distinguish between fluid ($\epsilon = 0$), solid ($\epsilon = 1$), and interface ($\epsilon \in (0, 1)$) regions.
+
+In the current implementation, a simplified spherical approximation is used for efficiency:
+\begin{equation}
+    \epsilon_i = 
+    \begin{cases} 
+      1 & \text{if } |\mathbf{x}_{cell} - \mathbf{x}_{particle}| < R_{particle} \\
+      0 & \text{otherwise}
+   \end{cases}
+\end{equation}
+where $\mathbf{x}_{cell}$ is the cell center, $\mathbf{x}_{particle}$ is the particle center, and $R_{particle}$ is the particle radius.
+
+\subsection{Solid Velocity Field ($\mathbf{U}_{solid}$)}
+The velocity of the solid phase is mapped to the grid to enforce the no-slip condition. The solid velocity at a cell center $\mathbf{x}_{cell}$ is calculated based on the particle's translational velocity $\mathbf{v}_p$ and angular velocity $\boldsymbol{\omega}_p$:
+\begin{equation}
+    \mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times (\mathbf{x}_{cell} - \mathbf{x}_{particle})
+\end{equation}
+
+\section{Particle Motion Modelling}
+The motion of sediment particles is governed by Newton's laws of motion, solved within the Lagrangian framework.
+
+\subsection{Governing Equations}
+For a particle $i$ of mass $m_i$ and moment of inertia $I_i$, the equations of motion are:
+\begin{equation}
+	m_i\frac{d\mathbf{v}_i}{dt} = \mathbf{F}^{g}_{i} + \mathbf{F}^{f}_{i} + \mathbf{F}^{c}_{i}
+\end{equation}
+\begin{equation}
+    I_i\frac{d\boldsymbol{\omega}_i}{dt} = \mathbf{T}^{f}_{i} + \mathbf{T}^{c}_{i}
+\end{equation}
+where $\mathbf{F}^{g}$ is gravity, $\mathbf{F}^{f}$ is the fluid force, and $\mathbf{F}^{c}$ is the contact force from collisions.
+
+\subsection{Time Integration}
+The particle state is updated using a semi-implicit Euler integration scheme:
+\begin{equation}
+	\mathbf{v}_{i, t+\Delta t} = \mathbf{v}_{i, t} + \frac{\mathbf{F}_{i}}{m_i} \Delta t
+\end{equation}
+\begin{equation}
+	\mathbf{x}_{i, t+\Delta t} = \mathbf{x}_{i, t} + \mathbf{v}_{i, t+\Delta t} \Delta t
+\end{equation}
+
+\section{Fluid Phase Modelling and Volume of Fluid}
+The fluid phase is modeled using the incompressible Navier-Stokes equations, modified to account for the presence of the solid phase.
+
+\subsection{Volume of Fluid (VOF) Method}
+The free surface is captured using the VOF method, where a phase fraction field $\alpha$ distinguishes between water ($\alpha=1$) and air ($\alpha=0$). The interface is tracked by solving the advection equation:
+\begin{equation}
+    \frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U}\alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
+\end{equation}
+where the last term is an artificial compression term to sharpen the interface.
+
+\subsection{Momentum Equation with IBM Forcing}
+The momentum equation is solved for the fluid velocity $\mathbf{U}$:
+\begin{equation}
+	\frac{\partial \rho \mathbf{U}}{\partial t} + \nabla \cdot (\rho \mathbf{U} \mathbf{U}) - \nabla \cdot (\mu_{eff} \nabla \mathbf{U}) = -\nabla p_{rgh} - \mathbf{g} \cdot \mathbf{x} \nabla \rho + \mathbf{F}_{IBM}
+\end{equation}
+The Immersed Boundary Method forcing is applied explicitly after the momentum predictor step to enforce the solid velocity within the particle domain. The velocity field is modified as:
+\begin{equation}
+    \mathbf{U}_{new} = (1 - \epsilon)\mathbf{U}_{predicted} + \epsilon \mathbf{U}_{solid}
+\end{equation}
+This volume penalization technique ensures that in cells fully occupied by the solid ($\epsilon=1$), the fluid velocity matches the solid velocity, while in fluid cells ($\epsilon=0$), the predicted fluid velocity is retained.
+
+\section{Coupling}
+The coupling between the phases is bidirectional and is handled in the `coupling.H` file.
+
+\subsection{Fluid-to-Particle Coupling}
+The forces exerted by the fluid on the particles are calculated by integrating the fluid stress over the particle volume. The primary contribution is the pressure gradient force:
+\begin{equation}
+    \mathbf{F}_{p} = \sum_{cells} (-\nabla p \cdot V_{cell} \cdot \epsilon_{cell})
+\end{equation}
+This force is accumulated for each particle and applied during the DEM motion update.
+
+\subsection{Particle-to-Fluid Coupling}
+The effect of particles on the fluid is captured through the IBM forcing term described above. By modifying the fluid velocity field to match the particle velocity, the solver implicitly accounts for the displacement of fluid by the solid bodies and the resulting drag and wake effects.

@@ -133,7 +133,7 @@ namespace Bashyal
         vtpFile << "</VTKFile>" << Foam::endl;
     }
 
-    Foam::boundBox geomObject::createBoundBox()
+    Foam::boundBox geomObject::createBoundBox() const
     {
         if (vertices().size() > 0)
         {

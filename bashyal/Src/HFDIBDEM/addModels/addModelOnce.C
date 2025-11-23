@@ -50,6 +50,12 @@ bodyAdded_(false)
 {
     if(!startTime0)
         bodyAdded_ = true;
+
+    if (addModelDict_.found("position"))
+    {
+        vector position = addModelDict_.get<vector>("position");
+        geomModel_->bodyMovePoints(position - geomModel_->getCoM());
+    }
 }
 
 addModelOnce::~addModelOnce()

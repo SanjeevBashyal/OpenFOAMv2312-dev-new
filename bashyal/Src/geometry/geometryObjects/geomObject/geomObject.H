@@ -25,7 +25,7 @@ namespace Bashyal
         // points() and faces() are inherited from indexedFaceSet
 
         void writeToSTL(const Foam::fileName &stlFile) const;
-        Foam::boundBox createBoundBox();
+        Foam::boundBox createBoundBox() const;
         void writeVtp(const Foam::fileName &filename) const;
     };
 }

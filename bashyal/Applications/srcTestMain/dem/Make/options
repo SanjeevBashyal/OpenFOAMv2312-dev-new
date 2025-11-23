@@ -4,24 +4,22 @@ EXE_INC = \
     -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/mesh/blockMesh/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Utilities/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Src/debug/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Utilities/converter/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Src/geometry/geometryModels/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Src/geometry/geometryObjects/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Src/geometry/geometryOperationsStatic/lnInclude \
-    -I$(WM_PROJECT_DIR)/bashyal/Src/dem/lnInclude
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Src/dem/lnInclude \
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryObjects/lnInclude \
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryModels/lnInclude \
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Src/geometry/geometryOperationsStatic/lnInclude \
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Utilities/lnInclude \
+    -I/usr/lib/openfoam/openfoam2312/bashyal/Src/debug/lnInclude
 
 EXE_LIBS = \
-    -ldebugClass \
+    -L$(FOAM_USER_LIBBIN) \
     -ldem \
-    -lgeometryModels \
     -lgeometryObjects \
+    -lgeometryModels \
     -lgeometryOperations \
-    -lfoamCGALConverter \
+    -lOpenFOAM \
     -lfileFormats \
     -lsurfMesh \
     -lmeshTools \
-    -lfoamCGALConverter \
     -lgmp \
     -lmpfr
