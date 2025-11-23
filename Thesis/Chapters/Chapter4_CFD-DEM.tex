@@ -135,6 +135,22 @@ P-Equation:\par
 \end{equation}
 \equations{P-Equation for Fluid Phase}
 
+In addition to the momentum and pressure equations, the Volume of Fluid (VOF) method is employed to capture the free surface interface between two immiscible fluids (e.g., air and water). The phase fraction $\alpha$ is governed by the transport equation:
+
+\begin{equation}
+    \frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U} \alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
+    \label{eqn:alpha_eqn}
+\end{equation}
+\equations{VOF Phase Fraction Equation}
+
+where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the interface. The physical properties of the fluid mixture, such as density $\rho$ and viscosity $\mu$, are calculated as weighted averages:
+\begin{equation}
+    \rho = \alpha \rho_1 + (1-\alpha) \rho_2
+\end{equation}
+\begin{equation}
+    \mu = \alpha \mu_1 + (1-\alpha) \mu_2
+\end{equation}
+
 PIMPLE solver implemented on OpenFOAM solves momentum and pressure equations within each time step, ensuring numerical stability and convergence, especially for cases involving complex geometries or high Reynolds numbers.\par
 
 \section{Lagrangian Mechanics and Discrete Element Method }
@@ -160,6 +176,31 @@ The velocity and position of the particle is updated using the equation:\par
 \end{equation}
 \equations{Particle Position Update}
 
+\subsection{Contact Force Model}
+The interaction between particles is modeled using the Walton-Braun hysteretic spring model, which accounts for energy dissipation through plastic deformation during impact. The normal force $F_n$ is calculated based on the overlap $\delta$ between particles:
+
+\textbf{Loading} ($\delta \ge \delta_{max}$):
+\begin{equation}
+    F_n = k_1 \delta
+\end{equation}
+
+\textbf{Unloading/Reloading} ($\delta < \delta_{max}$):
+\begin{equation}
+    F_n = k_2 (\delta - \delta_0)
+\end{equation}
+where $k_1$ is the loading stiffness, $k_2$ is the unloading stiffness, and $\delta_0$ is the residual overlap defined as $\delta_0 = \delta_{max} (1 - k_1/k_2)$. The effective coefficient of restitution is given by $e = \sqrt{k_1/k_2}$.
+
+A viscous damping force is also applied to stabilize the contact:
+\begin{equation}
+    F_{d,n} = -\gamma_n v_{rel,n}
+\end{equation}
+
+Tangential forces are modeled using a linear spring-dashpot system limited by Coulomb friction:
+\begin{equation}
+    F_t = \min \left( |k_t \xi - \gamma_t v_{rel,t}|, \mu F_n \right)
+\end{equation}
+where $\xi$ is the tangential displacement integration.
+
 \section{CFD -- DEM Coupling}
 
 \subsection{One Way Coupling}
@@ -174,7 +215,28 @@ In the implemented one-way coupling framework, the motion of discrete particles 
 \end{figure}
 
 
-In this approach, the CFD simulation computes the fluid flow field using a Eulerian framework, while the particles are tracked individually in a Lagrangian framework. The fluid forces are interpolated to the particle positions, ensuring accurate representation of the interaction between the fluid and the discrete particles.\par
+In this approach, the CFD simulation computes the fluid flow field using a Eulerian framework, while the particles are tracked individually in a Eulerian-Lagrangian framework. The fluid forces are interpolated to the particle positions, ensuring accurate representation of the interaction between the fluid and the discrete particles.
+
+\subsection{Immersed Boundary Method (IBM) Implementation}
+The coupling is realized through a Fictitious Domain method where the solid particles are mapped onto the Eulerian grid using a solid volume fraction field $\epsilon$.
+\begin{equation}
+    \epsilon_{cell} = 
+    \begin{cases} 
+    1 & \text{if cell center is inside particle} \\
+    0 & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+The solid velocity field $\mathbf{U}_{solid}$ is constructed in the cells occupied by particles:
+\begin{equation}
+    \mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times \mathbf{r}
+\end{equation}
+where $\mathbf{v}_p$ is the particle translational velocity, $\boldsymbol{\omega}_p$ is the angular velocity, and $\mathbf{r}$ is the distance vector from the particle center to the cell center.
+
+The fluid-to-particle force is calculated by integrating the pressure gradient over the particle volume:
+\begin{equation}
+    \mathbf{F}_{fluid \to particle} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell}
+\end{equation}
 
 \subsection{Flow Field Mapping at successive time interval}
 

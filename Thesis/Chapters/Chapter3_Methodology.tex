@@ -9,6 +9,38 @@ This chapter outlines the systematic approach adopted for the research, detailin
 	\label{fig:Methodology Flowchart}
 \end{figure}
 
+\section{Development of a CFD-DEM Solver in OpenFOAM}
+
+The development of the CFD-DEM solver involved a systematic process of environment setup, codebase study, and modular implementation of DEM physics and coupling algorithms.
+
+\subsection{Environment Setup: C++ in WSL and OpenFOAMv2312}
+The development environment was established using the Windows Subsystem for Linux (WSL), providing a robust Linux-based development platform on a Windows host. OpenFOAM-v2312 from OpenCFD Ltd. is forked from url \url{https://develop.openfoam.com/Development/openfoam/-/blob/master/doc/Build.md} as the core CFD framework. The source code of the OpenFOAM-v2312 was compiled with g++ flags \textit{-DO -DFULLDEBUG} to allow runtime debugging of the code. Visual Studio Code (VS Code) was utilized as the primary Integrated Development Environment (IDE), configured with C++ extensions for code navigation, debugging, and compilation management.
+
+\subsection{Study of FOAM Classes and Solvers}
+The OpenFOAM class hierarchy was studied in detail to understand the underlying architecture. Key classes analyzed included:
+\begin{itemize}
+    \item \textbf{fvMesh:} For handling computational grid and topology.
+    \item \textbf{volScalarField/volVectorField:} For managing field variables like pressure and velocity.
+    \item \textbf{pimpleFoam:} For understanding the PIMPLE algorithm for transient, incompressible flow, which served as base for the fluid solver.
+\end{itemize}
+
+\subsection{DEM Implementation}
+The Discrete Element Method (DEM) was implemented as a standalone library within the `bashyal/Src/dem` directory. The approach focused on modularity and extensibility:
+\begin{itemize}
+    \item \textbf{Particle Class:} A custom `particle` class was created to store properties (mass, position, velocity) and handle motion integration using Newton's laws.
+    \item \textbf{Collision Detection:} The Gilbert-Johnson-Keerthi (GJK) algorithm was implemented for robust collision detection between arbitrary convex shapes (cubes).
+    \item \textbf{Contact Models:} The Walton-Braun hysteretic spring model was integrated to calculate normal forces, accounting for energy dissipation, along with a Coulomb friction model for tangential forces.
+\end{itemize}
+
+\subsection{CFD-DEM Coupling}
+The coupling between the fluid and solid phases was achieved by developing a new solver, `fineDEMfoam`. The coupling strategy involved:
+\begin{itemize}
+    \item \textbf{Solver Structure:} The solver integrates the standard `pimpleFoam` loop with the custom DEM library.
+    \item \textbf{Immersed Boundary Method (IBM):} A fictitious domain approach was used where particles are mapped onto the fluid grid using a solid volume fraction field ($\epsilon$).
+    \item \textbf{Force Calculation:} Fluid forces (buoyancy, drag) are calculated based on the pressure gradient and interpolated velocity fields, then applied to the particles.
+    \item \textbf{Volume of Fluid (VOF):} The VOF method was retained to capture the free surface, allowing for the simulation of three-phase flows (air-water-sediment).
+\end{itemize}
+
 \section{Solver Validation and Comparative Analysis}
 
 To validate the performance and accuracy of the newly developed OpenFOAM based CFD-DEM solver, simulations are conducted on three fundamental test cases and the results are compared with those obtained from two state-of-the-art Eulerian-Lagrangian coupling frameworks. The CFDEM{\circledR} coupling framework \parencite{hager_parallel_2014} integrates OpenFOAM with LIGGGHTS{\circledR} DEM engine, providing a robust platform for resolved and unresolved particle-fluid interactions. The OpenHFDIB-DEM solver \parencite{studenik_openhfdib-dem_2024} extends OpenFOAM with a hybrid Fictitious Domain-Immersed Boundary method, enabling simulations with arbitrarily shaped particles. Three test cases are considered: free sedimentation of a single spherical particle, DEM pouring heap formation, and particle-laden flow in a channel, which are fundamental validation benchmarks for CFD-DEM solvers. These cases are selected due to their relevance to sediment transport processes and their ability to validate the accuracy of particle-particle interactions and particle-fluid coupling mechanisms. For each test case, simulations are performed using the newly developed solver, and the results are systematically compared with those obtained from CFDEM Coupling and OpenHFDIB-DEM solvers. The simulations are conducted under controlled configurations, with initial and boundary conditions carefully set to replicate experimental scenarios, ensuring a fair and meaningful comparison across all solvers.\par
@@ -52,44 +84,140 @@ The computational domain consists of a horizontal channel with specified length,
 	\label{fig:Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
 \end{figure}
 
-\section{OpenFOAM implementation of CFD-DEM Solver}
 
-The implementation of the CFD-DEM solver in OpenFOAM involves developing a coupled numerical framework to simulate fluid phase flow interactions with particle geometry. OpenFOAM-v2312 from OpenCFD Ltd. \parencite{noauthor_openfoam_nodate} is forked from url https://develop.openfoam.com/Development/openfoam/-/blob/master/doc/Build.md on top of which the DEM method is implemented. The methodological flowchart for the implementation of the solver is given as follows:\par
+\section{Fundamental Validation Test Cases}
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C04/openfoam_implementation_chart.png}
-	\caption{Methodology flowchart of solver implementation in OpenFOAM}
-	\label{fig:Methodology flowchart of solver implementation in OpenFOAM}
-\end{figure}
+To validate the developed solver, four fundamental test cases are established. These cases isolate specific physics: mechanical contact (DEM), fluid-structure interaction (CFD-DEM), tangential forces, and free-surface intersection.
 
-\subsection{Class Structure and Object-Oriented Design}
+\subsection{Test Case 1: DEM Validation - The Hysteretic Bounce}
+This test validates the GJK collision detection, Time Integration, and specifically the Walton-Braun Hysteretic force model.
 
-Making use of C++ object-oriented functionality, each component in the solver, from particle properties to fluid fields, is encapsulated within specific classes:\par
+\textbf{Theory:}
+In a hysteretic model, energy is dissipated by the difference in stiffness during loading ($k_1$) and unloading ($k_2$). The effective Coefficient of Restitution ($e$) is derived analytically as:
+\begin{equation}
+e = \sqrt{\frac{k_1}{k_2}}
+\end{equation}
 
+\textbf{Setup:}
 \begin{itemize}
-	\item  aggregate\textbf{ }class: The class represents individual particles in the flow domain, with properties such as size, density, position, velocity, and mass. It includes methods for updating particle position, velocity, and geometry creation tools.\par
-	\item  backgroundMesh\textbf{ }class: The class represents body custom generator to produce 3D mesh for fluid domain and body fitted immersed boundaries for particles.\par
-	\item  demUpdater\textbf{ }class: The class is used to determine pressure forces from pressure field and to calculate the acceleration and velocity by solving Newton's second law of motion.\par
+    \item \textbf{Domain:} A simple flat floor (Infinite Mass fixed polygon).
+    \item \textbf{Particle:} A single Cube (side length $L=0.1\,m$, Mass $m=1.0\,kg$).
+    \item \textbf{Initial State:} Drop the cube from height $H_0 = 1.0\,m$ (measured from the bottom face) with 0 rotation.
+    \item \textbf{Parameters:}
+    \begin{itemize}
+        \item Loading Stiffness $k_1 = 10^5 \, N/m$.
+        \item Unloading Stiffness $k_2 = 4 \times 10^5 \, N/m$.
+        \item Friction $\mu = 0$ (to prevent rotational energy losses for this test).
+        \item Gravity $g = 9.81 \, m/s^2$.
+    \end{itemize}
 \end{itemize}
 
-\subsection{Discretization and Mesh Handling}
+\textbf{Analytical Target:}
+\begin{enumerate}
+    \item \textbf{Expected Coefficient of Restitution:} $e = \sqrt{10^5 / (4 \times 10^5)} = \sqrt{0.25} = 0.5$.
+    \item \textbf{Expected Rebound Height:} $H_1 = H_0 \times e^2 = 1.0 \times (0.5)^2 = 0.25\,m$.
+\end{enumerate}
 
-The computational domain is discretized using a three-dimensional Cartesian grid, which adapts dynamically to accommodate the geometry of sediments within the fluid. The mesh is defined by global bounds and resolution, balancing accuracy with computational efficiency. Sediment aggregates are modeled as discrete geometries introduced into the flow domain using a distribution of sizes and orientations. The integration of sediment boundaries into the computational grid is achieved through geometry intersection techniques, which detect and resolve interactions between the sediment surfaces and mesh cells. This process updates the mesh dynamically by modifying vertices, faces, and cells to incorporate sediment as solid boundaries, ensuring accurate representation of sediment-fluid interactions within the simulation domain.\par
+\textbf{Validation Metrics:}
+\begin{itemize}
+    \item \textbf{Vertical Position ($z$) vs. Time:} The peak of the second bounce should be exactly $0.25m$.
+    \item \textbf{Force vs. Overlap (Hysteresis Loop):} The normal force and penetration depth during impact should form a triangle-like shape, with slope $k_1$ during loading and $k_2$ during unloading.
+\end{itemize}
 
-\subsection{Fluid Flow Computation}
+\subsection{Test Case 2: CFD-DEM Validation - Terminal Velocity of a Settling Cube}
+This test validates Buoyancy (Volume calculation), Drag Force (Coupling), and the IBM/Cut-Cell Fluid Displacement.
 
-The fluid phase is solved using an adapted OpenFOAM solver pimpleFoam that has been modified to incorporate particle interactions. Pressure-velocity coupling is managed using PIMPLE algorithm to ensure the stability of transient simulations. Boundary conditions, including inlet velocity profiles and no-slip walls, are implemented to accurately model realistic fluid flows within the domain.\par
+\textbf{Theory:}
+A particle falling in a fluid accelerates until Drag + Buoyancy equals Gravity.
+\begin{equation}
+F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v_t^2 C_d A \right)
+\end{equation}
 
-\subsection{Discrete Element Method (DEM) Solver}
+\textbf{Setup:}
+\begin{itemize}
+    \item \textbf{Domain:} A vertical column of water ($W > 10L$). Grid resolution $\approx L/4$.
+    \item \textbf{Fluid:} Water ($\rho_f = 1000 \, kg/m^3$, $\mu = 0.001 \, Pa\cdot s$).
+    \item \textbf{Particle:} A Cube ($L = 0.02 \, m$, $\rho_s = 2000 \, kg/m^3$, $m = 0.016 \, kg$).
+    \item \textbf{Initial State:} Released from rest, fully submerged.
+\end{itemize}
 
-The DEM solver performs force calculation which includes pressure and gravitational forces acting on particles and computes acceleration, velocity, and position of the particle for the next time-step using Euler time integration scheme.\par
+\textbf{Analytical Target:}
+\begin{enumerate}
+    \item \textbf{Net Driving Force:} $F_{net} = F_g - F_b = 0.15696 - 0.07848 = 0.07848 \, N$.
+    \item \textbf{Expected Terminal Velocity ($v_t$):}
+    \begin{equation}
+    v_t = \sqrt{\frac{2(F_g - F_b)}{\rho_f A C_d}} \approx 0.611 \, m/s
+    \end{equation}
+    (Assuming $C_d \approx 1.05$ for a cube).
+\end{enumerate}
 
-\subsection{Coupling CFD and DEM Phases}
+\textbf{Validation Metrics:}
+\begin{itemize}
+    \item \textbf{Particle Velocity ($v_z$) vs. Time:} Should asymptotically approach $\approx 0.61 \, m/s$.
+    \item \textbf{Fluid Velocity Field:} A recirculation zone (wake) should form behind the cube.
+\end{itemize}
 
-The coupling between the pimple and DEM solvers is achieved through a one-way exchange of momentum and energy. The fluid phase exerts pressure force on particles, calculated based on pressure field obtained by the solution of pimple solver. At each time-step, the fluid solver is executed first, followed by the DEM solver. The iteration loop continues until convergence, or the specified time is reached.\par
+\subsection{Test Case 3: DEM Validation - Sliding Block on an Inclined Plane}
+This test validates the Tangential Force Model, Coulomb Friction Limit, and Gravity Projection.
 
-\subsection{Solver Testing and Result Evaluation}
+\textbf{Theory:}
+For a block on an incline $\theta$:
+\begin{itemize}
+    \item Driving Force: $F_{down} = m g \sin(\theta)$
+    \item Resistive Force: $F_{fric} = \mu F_{normal} = \mu m g \cos(\theta)$
+    \item Net Acceleration: $a = g (\sin\theta - \mu \cos\theta)$
+\end{itemize}
 
-To ensure the solver's functionality, the simplest case is solved using the solver i.e. free sedimentation of a single particle. The solver outputs particle positions, velocities, and fluid fields at each time step, recorded for post-processing. The results are saved in ASCII formats for analysis and visualization in the software ParaView.\par
-\textbf{Statistical analysis:} Additional post-processing routines compute path lines, forces, and stress distributions, providing insights into particle transport and interaction effects.\par
+\textbf{Setup:}
+\begin{itemize}
+    \item \textbf{Domain:} Fixed rectangular floor tilted at $\theta = 30^\circ$.
+    \item \textbf{Particle:} Cube ($L=0.1\,m$, $m=1.0\,kg$).
+    \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.3$.
+\end{itemize}
+
+\textbf{Analytical Target:}
+\begin{enumerate}
+    \item \textbf{Expected Acceleration:}
+    \begin{equation}
+    a = 9.81 \times (\sin(30^\circ) - 0.3 \cos(30^\circ)) \approx 2.356 \, m/s^2
+    \end{equation}
+\end{enumerate}
+
+\textbf{Validation Metrics:}
+\begin{itemize}
+    \item \textbf{Velocity ($v$) vs. Time:} The slope should be exactly $2.356$.
+    \item \textbf{Tangential Force Magnitude:} Should equal $\mu m g \cos(\theta) \approx 2.55 \, N$.
+\end{itemize}
+
+\subsection{Test Case 4: CFD-DEM Validation - The Floating Cube Equilibrium}
+This test validates the VOF-IBM Coupling and Free-Surface Intersection.
+
+\textbf{Theory:}
+Archimedes' principle for a floating object:
+\begin{equation}
+\rho_s L^3 g = \rho_f (L^2 h_{sub}) g
+\end{equation}
+
+\textbf{Setup:}
+\begin{itemize}
+    \item \textbf{Domain:} Tank of water with free surface at $Y_{water} = 0.5\,m$.
+    \item \textbf{Particle:} Cube ($L=0.1\,m$).
+    \item \textbf{Parameters:} $\rho_f = 1000 \, kg/m^3$, $\rho_s = 500 \, kg/m^3$.
+    \item \textbf{Initial State:} Drop from slightly above water.
+\end{itemize}
+
+\textbf{Analytical Target:}
+\begin{enumerate}
+    \item \textbf{Equilibrium Depth:} $h_{sub} = L (\rho_s/\rho_f) = 0.05\,m$ (Half-submerged).
+    \item \textbf{Oscillation Period:} $T = 2\pi \sqrt{h_{sub} / g} \approx 0.448 \, s$.
+\end{enumerate}
+
+\textbf{Validation Metrics:}
+\begin{itemize}
+    \item \textbf{Vertical Position:} Should settle at $z = Y_{water} + (L/2) - h_{sub}$.
+    \item \textbf{Volume Fraction Field:} Inside block $\epsilon=1$. At water line, cells should be partially solid and partially water.
+\end{itemize}
+
+\section{Study Cases}
+The primary study case for this research involves the simulation of free surface flow in a sloped rectangular channel. The domain features a rigid bed and a mobile bed composed of sand particles. This setup aims to investigate sediment transport mechanisms, bedform evolution, and the interaction between the turbulent free-surface flow and the granular bed. The simulation leverages the full capabilities of the developed `fineDEMfoam` solver, utilizing the VOF method for the free surface and the coupled DEM for the mobile sediment phase.
+\par
