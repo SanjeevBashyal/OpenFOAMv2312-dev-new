@@ -14,7 +14,7 @@ This chapter outlines the systematic approach adopted for the research, detailin
 The development of the CFD-DEM solver involved a systematic process of environment setup, codebase study, and modular implementation of DEM physics and coupling algorithms.
 
 \subsection{Environment Setup: C++ in WSL and OpenFOAMv2312}
-The development environment was established using the Windows Subsystem for Linux (WSL), providing a Linux-based development platform on a Windows host. OpenFOAM-v2312 from OpenCFD Ltd. is forked from url \url{https://develop.openfoam.com/Development/openfoam/-/blob/master/doc/Build.md} as the core CFD framework. The source code of the OpenFOAM-v2312 was compiled with g++ flags \textit{-DO -DFULLDEBUG} to allow runtime debugging of the code. Visual Studio Code (VS Code) was utilized as the primary Integrated Development Environment (IDE), configured with C++ extensions for code navigation, debugging, and compilation management.
+The development environment was established using the Windows Subsystem for Linux (WSL), providing a Linux-based development platform on a Windows host. OpenFOAM-v2312 from OpenCFD Ltd. is forked from url \url{https://develop.openfoam.com/Development/openfoam/-/blob/master/doc/Build.md} as the core CFD framework. The source code of the OpenFOAM-v2312 was compiled with g++ flags \textit{-O0 -DFULLDEBUG} to allow runtime debugging of the code. Visual Studio Code (VS Code) was utilized as the primary Integrated Development Environment (IDE), configured with C++ extensions for code navigation, debugging, and compilation management.
 
 \subsection{Study of FOAM Classes and Solvers}
 The OpenFOAM class hierarchy was studied in detail to understand the underlying architecture. Key classes analyzed included:
@@ -93,7 +93,7 @@ For a block on an incline $\theta$:
 \subsubsection{Test Case 3: CFD-DEM Validation - Free Sedimentation of a settling cube}
 This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the free fall of a single settling cube in a quiescent fluid, with results compared against CFDEM Coupling and theoretical predictions. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces.
 
-The computational domain consists of a rectangular channel with dimensions sufficient to minimize wall effects on particle motion. The particle is initially positioned at the top of the domain. Simulations are performed using the newly developed "fineDEMfoam" solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
+The computational domain consists of a static water column of dimension \textbf{1 cm $\boldsymbol{\mathrm{\times}}$ 40 cm $\boldsymbol{\mathrm{\times}}$ 2 cm} (X $\mathrm{\times}$ Y $\mathrm{\times}$ Z) with mesh resolution of 0.005mm. A single particle with sizes (1.5 mm, 2 mm, and 2.5 mm) represented by cube geometry with density 2000 is introduced near the top of the column at \textbf{39 cm} along the Y-axis and allowed to fall under the influence of gravity. Simulations are performed using the newly developed "fineDEMfoam" solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
 
 \textbf{Theory:}
 A particle falling in a fluid accelerates until Drag + Buoyancy equals Gravity.
@@ -102,6 +102,7 @@ F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v
 \end{equation}
 
 \textbf{Setup:}
+
 \begin{itemize}
     \item \textbf{Domain:} A vertical column of water ($W > 10L$). Grid resolution $\approx L/4$.
     \item \textbf{Fluid:} Water ($\rho_f = 1000 \, kg/m^3$, $\mu = 0.001 \, Pa\cdot s$).
@@ -114,6 +115,13 @@ F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v
 	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/single_particle_case.png}
 	\caption{Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
 	\label{fig:Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/test_case_mesh.png}
+	\caption{Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
+	\label{fig:Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
 \end{figure}
 
 \subsubsection{Test Case 4: CFD-DEM Validation - The Floating Cube Equilibrium}
@@ -145,7 +153,7 @@ The computational domain consists of a horizontal channel with specified length,
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C04/sediment_bed_sim.png}
+	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C04/sediment_bed_sim.png}
 	\caption{Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
 	\label{fig:Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
 \end{figure}

@@ -41,18 +41,18 @@ Addressing these gaps requires the development of a coupled turbulence closure a
 
 The research questions of the study are as follows:
 \begin{itemize}
-	\item What is the influence of turbulence closure scheme on RANS simulations involving sediment transport dynamics?
 	\item What are the key interactions between turbulent flow structures and particle transport processes in river systems, and how can these interactions be quantitatively modeled?
 	\item How well does the OpenFOAM based CFD-DEM solver perform in predicting sediment mixed flow under various flow conditions compared to traditional models?
+	\item What is the influence of turbulence closure scheme on RANS simulations involving sediment transport dynamics?
 	
 \end{itemize}
 
 \section{Objectives}
 The objectives of the research are as follows:
 \begin{itemize}
-	\item To identify the most suitable two equation RANS turbulence closure scheme for accurate prediction of sediment transport phenomenon near bed region.
-	\item To develop a model that combines 3D turbulence modeling techniques of finite volume method with discrete element method in the body fitted immersed boundary mesh to simulate particle transport processes during fluid flow.
+	\item To develop a model that combines 3D turbulence modeling techniques of finite volume method with discrete element method in the immersed boundary mesh to simulate particle transport processes during fluid flow.
 	\item To implement the model in OpenFOAM framework and to assess the predictive capabilities of the model by comparing its performance against previously studied models and physical experiments.
+	\item To identify the most suitable two equation RANS turbulence closure scheme for accurate prediction of sediment transport phenomenon near bed region.
 
 \end{itemize}
 
@@ -88,7 +88,7 @@ This thesis is organized into six chapters, each addressing specific aspects of 
 
 \textbf{Chapter 3: Methodology} outlines the systematic approach adopted for the research, beginning with the study of existing solvers. It details the analysis of SedFoam using different RANS turbulence closure schemes ($k-\epsilon$ and $k-\omega$) through two test cases: single-phase flow near a solid boundary and scour formation influenced by a rigid cylinder. The chapter establishes the validation techniques and framework for assessing the developed solver.\par
 
-\textbf{Chapter 4: CFD-DEM Implementation in OpenFOAM} describes the technical implementation of the CFD-DEM solver within the OpenFOAM framework. It covers geometry and meshing strategies, including the background mesh generation, sediment flow domain definition, and the body-fitted immersed boundary method for handling non-spherical particles. The chapter details the mesh-particle intersection algorithms and the computational framework for coupling fluid and particle dynamics.\par
+\textbf{Chapter 4: CFD-DEM Implementation in OpenFOAM} describes the technical implementation of the CFD-DEM solver within the OpenFOAM framework. It covers geometry and meshing strategies, including the background mesh generation, sediment flow domain definition, and the immersed boundary method for handling non-spherical particles. The chapter details the mesh-particle intersection algorithms and the computational framework for coupling fluid and particle dynamics.\par
 
 \textbf{Chapter 5: Results} presents the findings from the comparative analysis of turbulence closure schemes in SedFoam and the validation results of the developed CFD-DEM solver. It includes comparisons with Direct Numerical Simulation (DNS) data and experimental results, evaluating the performance of different turbulence models and demonstrating the solver's capability to predict sediment transport phenomena.\par
 

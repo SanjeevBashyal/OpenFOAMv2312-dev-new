@@ -67,30 +67,29 @@ These aggregates are then intersected with the background mesh using the interse
 
 Geometry intersection ensures integration of sediment geometry into the computational domain as solid boundaries. The focus is on detecting and resolving interactions between complex surfaces, such as aggregates and the background block, to ensure accurate physical representation in sediment flow modeling. Key components include methods for surface intersection detection, cut face generation, and data merging for intersected geometries.\par
 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
+	\caption{Development of immersed boundary of a particle}
+	\label{fig:Development of immersed boundary of particle}
+\end{figure}
+
 \begin{enumerate}
 	\item  \textbf{Bounding Box Matching}: Each sediment's bounding box (getBoundBox) is mapped to the corresponding blocks in the computational domain.\par
 	\item  \textbf{Closed Surface Intersections}: The sediment's boundary faces are checked for intersections with the domain grid.\par
 	\item  \textbf{Dynamic Updates}: The mesh dynamically adapts by updating vertices, faces, and cells based on sediment geometry.\par
 \end{enumerate}
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
-	\caption{Development of immersed boundary of particle}
-	\label{fig:Development of immersed boundary of particle}
-\end{figure}
-
 \subsubsection{Intersection with Closed Surfaces}
 
-The intersectClosedSurface function handles the process of intersecting a cube aggregate's triangulated surface (faces and points) with a backgroundBlock. It identifies intersection points and reconstructs the geometry of the intersected surfaces.\par
-
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/cube_intersection.png}
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/cube_intersection.png}
 	\caption{Intersection of a cube geometry with background mesh}
 	\label{fig:Intersection of a cube geometry with background mesh}
 \end{figure}
 
+The intersectClosedSurface function handles the process of intersecting a cube aggregate's triangulated surface (faces and points) with a backgroundBlock. It identifies intersection points and reconstructs the geometry of the intersected surfaces.\par
 
 \begin{figure}[ht]
 	\centering
@@ -101,31 +100,31 @@ The intersectClosedSurface function handles the process of intersecting a cube a
 
 \section{Fluid Phase Modelling}
 
-The fluid phase in the solver is modelled using locally averaged incompressible Navier Stokes equations which are given as follows:\par
+The fluid phase in the solver is modelled using locally averaged incompressible Navier-Stokes equations. The governing equations for the fluid flow are the mass conservation (continuity) and momentum conservation equations:
 
-U-Equation:\par
+\subsection{Governing Equations}
+
+\textbf{Continuity Equation:}
 \begin{equation}
-	\frac{\partial \boldsymbol{\mathrm{U}}}{\partial t}+\mathrm{\nabla }\cdot \left[\boldsymbol{\mathrm{U}}\times \boldsymbol{\mathrm{U}}-{\boldsymbol{\mathrm{v}}}_m\times \boldsymbol{\mathrm{U}}\right]-\nu {\mathrm{\nabla }}^2\boldsymbol{\mathrm{U}}=-\mathrm{\nabla }p
-	\label{eqn:5_1}
+	\nabla \cdot \mathbf{U} = 0
+	\label{eqn:continuity}
 \end{equation}
-\equations{U-Equation for Fluid Phase}
 
-P-Equation:\par
+\textbf{Momentum Equation:}
 \begin{equation}
-	\mathrm{\nabla }\cdot \left[\frac{1}{a}\mathrm{\nabla }p\right]=\mathrm{\nabla }\cdot \left[{\boldsymbol{\mathrm{U}}}^*+{\boldsymbol{\mathrm{v}}}_m\right]
-	\label{eqn:5_2}
+	\frac{\partial \mathbf{U}}{\partial t} + \nabla \cdot (\mathbf{U} \mathbf{U}) - \nabla \cdot (\nu_{eff} \nabla \mathbf{U}) = -\frac{1}{\rho} \nabla p + \mathbf{g} + \mathbf{f}_{ib}
+	\label{eqn:momentum}
 \end{equation}
-\equations{P-Equation for Fluid Phase}
+where $\mathbf{U}$ is the fluid velocity field, $p$ is the pressure, $\rho$ is the fluid density, $\nu_{eff}$ is the effective kinematic viscosity (molecular + turbulent), $\mathbf{g}$ is the gravitational acceleration, and $\mathbf{f}_{ib}$ represents the immersed boundary forcing term accounting for the presence of solid particles.
 
-In addition to the momentum and pressure equations, the Volume of Fluid (VOF) method is employed to capture the free surface interface between two immiscible fluids (e.g., air and water). The phase fraction $\alpha$ is governed by the transport equation:
+\subsection{Volume of Fluid (VOF) Method}
+To capture the free surface interface between two immiscible fluids (e.g., air and water), the Volume of Fluid (VOF) method is employed. The phase fraction $\alpha$ is governed by the transport equation:
 
 \begin{equation}
 	\frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U} \alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
 	\label{eqn:alpha_eqn}
 \end{equation}
-\equations{VOF Phase Fraction Equation}
-
-where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the interface. The physical properties of the fluid mixture, such as density $\rho$ and viscosity $\mu$, are calculated as weighted averages:
+where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the interface. The physical properties of the fluid mixture are calculated as weighted averages:
 \begin{equation}
 	\rho = \alpha \rho_1 + (1-\alpha) \rho_2
 \end{equation}
@@ -133,93 +132,144 @@ where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the in
 	\mu = \alpha \mu_1 + (1-\alpha) \mu_2
 \end{equation}
 
-PIMPLE solver implemented on OpenFOAM solves momentum and pressure equations within each time step, ensuring numerical stability and convergence, especially for cases involving complex geometries or high Reynolds numbers.\par
+\subsection{PIMPLE Algorithm}
+The pressure-velocity coupling is handled using the PIMPLE algorithm, which combines the PISO and SIMPLE algorithms. This ensures numerical stability and convergence for transient flows with large time steps. The algorithm solves the momentum predictor and pressure corrector steps iteratively within each time step.
 
-\section{Lagrangian Mechanics and Discrete Element Method }
+\section{Discrete Element Method (DEM) Implementation}
 
-The governing equation for particle motion is given as:\par
+The Discrete Element Method (DEM) is implemented as a standalone library within the `bashyal/Src/dem` directory, designed to handle the Lagrangian dynamics of solid particles. The implementation is modular, consisting of several key components: Particle Class, Space Registry, Time Registry, and Contact Models.
 
-Newton's second law of motion:\par
+\subsection{Particle Class}
+The `particle` class forms the core of the DEM implementation. It extends the basic geometric boundary class with physical properties and kinematic state variables.
+
+\textbf{Physical Properties:}
+Each particle stores its mass ($m$), moment of inertia tensor ($\mathbf{I}$), and characteristic diameter ($d_c$).
+
+\textbf{Kinematic State:}
+The state of a particle is defined by its position ($\mathbf{x}$), orientation (quaternion $\mathbf{q}$), linear velocity ($\mathbf{v}$), and angular velocity ($\boldsymbol{\omega}$).
+
+\textbf{Equations of Motion:}
+The motion of each particle $i$ is governed by Newton's second law for translation and rotation:
 \begin{equation}
-	m_i\frac{d^2{\boldsymbol{x}}_{\boldsymbol{i}}}{dt^2}={\boldsymbol{F}}^{\boldsymbol{g}}_{\boldsymbol{i}}+{\boldsymbol{F}}^{\boldsymbol{f}}_{\boldsymbol{i}}
-	\label{eqn:5_3}
+	m_i \frac{d\mathbf{v}_i}{dt} = \mathbf{F}_{total} = \mathbf{F}_{contact} + \mathbf{F}_{fluid} + \mathbf{F}_{gravity}
 \end{equation}
-\equations{Newton's Second Law for Particle Motion}
+\begin{equation}
+	\mathbf{I}_i \frac{d\boldsymbol{\omega}_i}{dt} + \boldsymbol{\omega}_i \times (\mathbf{I}_i \boldsymbol{\omega}_i) = \mathbf{T}_{total} = \mathbf{T}_{contact} + \mathbf{T}_{fluid}
+\end{equation}
 
-The velocity and position of the particle is updated using the equation:\par
+\textbf{Time Integration:}
+A semi-implicit Euler integration scheme is used to update the particle state:
 \begin{equation}
-	{\boldsymbol{v}}_{\boldsymbol{i}\boldsymbol{,\ \ }\boldsymbol{t}}={\boldsymbol{v}}_{\boldsymbol{i},\boldsymbol{t}\boldsymbol{-}\boldsymbol{1}}+{\boldsymbol{a}}_{\boldsymbol{i},\boldsymbol{t}}\cdot t
-	\label{eqn:5_4}
+	\mathbf{v}_{t+\Delta t} = \mathbf{v}_t + \frac{\mathbf{F}_{total}}{m} \Delta t
 \end{equation}
-\equations{Particle Velocity Update}
 \begin{equation}
-	{\boldsymbol{x}}_{\boldsymbol{i}\boldsymbol{,\ \ }\boldsymbol{t}}={\boldsymbol{x}}_{\boldsymbol{i},\boldsymbol{t}\boldsymbol{-}\boldsymbol{1}}+{\boldsymbol{v}}_{\boldsymbol{i},\boldsymbol{t}}\cdot t
-	\label{eqn:5_5}
+	\mathbf{x}_{t+\Delta t} = \mathbf{x}_t + \mathbf{v}_{t+\Delta t} \Delta t
 \end{equation}
-\equations{Particle Position Update}
+Angular quantities are updated similarly, with quaternion normalization to maintain valid orientation.
+
+\subsection{Space Registry}
+To efficiently handle particle interactions and avoid $O(N^2)$ complexity in collision detection, a `spaceRegistry` class is implemented.
+
+\textbf{Spatial Partitioning:}
+The simulation domain is divided into a grid of cells. Each particle is registered to the cells it overlaps with based on its bounding box. This allows the solver to check for collisions only between particles in the same or neighboring cells.
+
+\textbf{Bounding Box Check:}
+Before performing detailed collision detection, a fast axis-aligned bounding box (AABB) overlap check is performed to quickly cull non-colliding pairs.
+
+\subsection{Time Registry and I/O}
+The `timeRegistry` class manages the simulation time, time-stepping, and data input/output.
+
+\textbf{Time Stepping:}
+It controls the advancement of the DEM simulation time, which may be sub-cycled relative to the CFD time step to ensure stability of the contact mechanics.
+
+\textbf{Data Output (PVD/VTP):}
+The registry handles the writing of particle data to VTK PolyData (.vtp) files. A ParaView Data (.pvd) file is maintained to link these time-series files, allowing for easy visualization and animation of particle motion in ParaView.
+
+\subsection{Collision Detection: GJK Algorithm}
+Robust collision detection for arbitrary convex shapes (like the cubes used in this study) is achieved using the Gilbert-Johnson-Keerthi (GJK) algorithm.
+
+\textbf{Principle:}
+The GJK algorithm determines if two convex shapes overlap by checking if the origin is contained within their Minkowski Difference ($A \ominus B = \{a - b | a \in A, b \in B\}$).
+
+\textbf{Implementation Details:}
+\begin{itemize}
+    \item \textbf{Support Function:} A key component is the support function $S_A(\mathbf{d})$, which returns the point on shape $A$ furthest in direction $\mathbf{d}$. For a cube, this is one of its vertices.
+    \item \textbf{Simplex Evolution:} The algorithm iteratively builds a simplex (line, triangle, tetrahedron) inside the Minkowski difference to enclose the origin.
+    \item \textbf{EPA (Expanding Polytope Algorithm):} If a collision is detected, the EPA is used to determine the penetration depth and contact normal by expanding the simplex to find the closest point on the boundary of the Minkowski difference to the origin.
+\end{itemize}
 
 \subsection{Contact Force Model}
-The interaction between particles is modeled using the Walton-Braun hysteretic spring model, which accounts for energy dissipation through plastic deformation during impact. The normal force $F_n$ is calculated based on the overlap $\delta$ between particles:
+Once a collision is detected, the interaction forces are calculated using the Walton-Braun hysteretic spring model.
 
-\textbf{Loading} ($\delta \ge \delta_{max}$):
+\textbf{Normal Force:}
 \begin{equation}
-	F_n = k_1 \delta
-\end{equation}
-
-\textbf{Unloading/Reloading} ($\delta < \delta_{max}$):
-\begin{equation}
-	F_n = k_2 (\delta - \delta_0)
-\end{equation}
-where $k_1$ is the loading stiffness, $k_2$ is the unloading stiffness, and $\delta_0$ is the residual overlap defined as $\delta_0 = \delta_{max} (1 - k_1/k_2)$. The effective coefficient of restitution is given by $e = \sqrt{k_1/k_2}$.
-
-A viscous damping force is also applied to stabilize the contact:
-\begin{equation}
-	F_{d,n} = -\gamma_n v_{rel,n}
-\end{equation}
-
-Tangential forces are modeled using a linear spring-dashpot system limited by Coulomb friction:
-\begin{equation}
-	F_t = \min \left( |k_t \xi - \gamma_t v_{rel,t}|, \mu F_n \right)
-\end{equation}
-where $\xi$ is the tangential displacement integration.
-
-\section{CFD -- DEM Coupling}
-
-\subsection{One Way Coupling}
-
-In the implemented one-way coupling framework, the motion of discrete particles is influenced by forces from both the fluid phase and gravity, while the particles do not exert any feedback on the fluid flow.\par
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/fluid_pressure.png}
-	\caption{Pressure force acting on the Sediment particle under Fluid Flow Domain}
-	\label{fig:Pressure force acting on the Sediment particle under Fluid Flow Domain}
-\end{figure}
-
-
-In this approach, the CFD simulation computes the fluid flow field using a Eulerian framework, while the particles are tracked individually in a Eulerian-Lagrangian framework. The fluid forces are interpolated to the particle positions, ensuring accurate representation of the interaction between the fluid and the discrete particles.
-
-\subsection{Immersed Boundary Method (IBM) Implementation}
-The coupling is realized through a Fictitious Domain method where the solid particles are mapped onto the Eulerian grid using a solid volume fraction field $\epsilon$.
-\begin{equation}
-	\epsilon_{cell} = 
-	\begin{cases} 
-		1 & \text{if cell center is inside particle} \\
-		0 & \text{otherwise}
+	F_n = \begin{cases} 
+	k_1 \delta & \text{Loading } (\dot{\delta} \ge 0) \\
+	k_2 (\delta - \delta_0) & \text{Unloading } (\dot{\delta} < 0)
 	\end{cases}
 \end{equation}
+where $k_1$ and $k_2$ are loading and unloading stiffnesses, and $\delta_0$ is the residual overlap. This hysteresis accounts for energy dissipation (plasticity).
 
-The solid velocity field $\mathbf{U}_{solid}$ is constructed in the cells occupied by particles:
+\textbf{Tangential Force:}
+A Coulomb friction model limits the tangential force:
 \begin{equation}
-	\mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times \mathbf{r}
-\end{equation}
-where $\mathbf{v}_p$ is the particle translational velocity, $\boldsymbol{\omega}_p$ is the angular velocity, and $\mathbf{r}$ is the distance vector from the particle center to the cell center.
-
-The fluid-to-particle force is calculated by integrating the pressure gradient over the particle volume:
-\begin{equation}
-	\mathbf{F}_{fluid \to particle} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell}
+	F_t = \min(|k_t \xi|, \mu F_n)
 \end{equation}
 
-\subsection{Flow Field Mapping at successive time interval}
+\section{CFD-DEM Coupling}
 
-Mapping the flow field (pressure and velocity) from the previous time step's mesh to the current one is performed using interpolation techniques, where the flow variables from the old mesh are projected onto the new mesh based on spatial proximity or weighted averages. Additionally, boundary conditions like the no-slip condition are enforced during mapping to ensure that the fluid velocity matches the solid particle velocities at the fluid-solid interface. This coupling ensures the physical fidelity of the simulation by maintaining consistency in fluid-particle interactions and avoiding artifacts like spurious velocity or pressure fields caused by the mesh evolution.\par
+The coupling between the fluid solver (`fineDEMfoam`) and the DEM library is achieved through a partitioned approach, where the fluid and solid equations are solved sequentially within each time step.
+
+\subsection{Solver Structure: fineDEMfoam}
+The `fineDEMfoam` solver integrates the DEM loop into the standard PIMPLE algorithm. The high-level algorithm is:
+\begin{enumerate}
+    \item Initialize DEM particles (`particlesGenerator`).
+    \item \textbf{Time Loop:}
+    \begin{enumerate}
+        \item Calculate Immersed Boundary (IBM) fields ($\epsilon, \mathbf{U}_{solid}$).
+        \item \textbf{PIMPLE Loop (Fluid Solver):}
+        \begin{enumerate}
+            \item Solve VOF equation ($\alpha$).
+            \item Solve Momentum predictor ($\mathbf{U}$).
+            \item Solve Pressure corrector ($p$).
+            \item \textbf{Coupling Step:} Calculate fluid forces on particles.
+        \end{enumerate}
+        \item \textbf{DEM Loop:}
+        \begin{enumerate}
+            \item Detect collisions (Space Registry + GJK).
+            \item Calculate contact forces.
+            \item Apply fluid and contact forces.
+            \item Update particle positions and velocities.
+        \end{enumerate}
+        \item Write output (Fluid fields + Particle VTPs).
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Immersed Boundary Method (IBM)}
+The presence of particles in the fluid is represented using a Fictitious Domain method.
+
+\textbf{Solid Volume Fraction ($\epsilon$):}
+A field $\epsilon$ is calculated to identify cells occupied by particles. In the current implementation, a cell is considered occupied ($\epsilon=1$) if its center lies within the particle's radius (approximated as a sphere for the IBM mapping):
+\begin{equation}
+	\epsilon_{cell} = \begin{cases} 1 & \text{if } |\mathbf{x}_{cell} - \mathbf{x}_{particle}| < R \\ 0 & \text{otherwise} \end{cases}
+\end{equation}
+
+\textbf{Solid Velocity Field ($\mathbf{U}_{solid}$):}
+For cells inside a particle, a solid velocity is constructed to enforce the no-slip condition:
+\begin{equation}
+	\mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times (\mathbf{x}_{cell} - \mathbf{x}_{particle})
+\end{equation}
+
+\subsection{Force Calculation and Application}
+The two-way coupling requires the exchange of forces.
+
+\textbf{Fluid-to-Particle Force:}
+The force exerted by the fluid on the particle is computed by integrating the pressure gradient and viscous stresses over the particle volume. In the implemented code, this is approximated by summing the contributions from occupied cells:
+\begin{equation}
+	\mathbf{F}_{fluid} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell} + m_p \mathbf{g}
+\end{equation}
+This force is then applied to the particle in the DEM update step.
+
+\textbf{Particle-to-Fluid Coupling:}
+The influence of particles on the fluid is typically handled via the IBM forcing term in the momentum equation, which forces the fluid velocity $\mathbf{U}$ towards $\mathbf{U}_{solid}$ in occupied regions, effectively acting as a momentum sink/source.
+\par
