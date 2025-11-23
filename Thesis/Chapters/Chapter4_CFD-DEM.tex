@@ -117,6 +117,18 @@ The fluid phase in the solver is modelled using locally averaged incompressible 
 \end{equation}
 where $\mathbf{U}$ is the fluid velocity field, $p$ is the pressure, $\rho$ is the fluid density, $\nu_{eff}$ is the effective kinematic viscosity (molecular + turbulent), $\mathbf{g}$ is the gravitational acceleration, and $\mathbf{f}_{ib}$ represents the immersed boundary forcing term accounting for the presence of solid particles.
 
+\subsection{Turbulence Modelling}
+The solver incorporates turbulence modelling through the Reynolds-Averaged Navier-Stokes (RANS) approach. In this framework, the instantaneous velocity field is decomposed into a mean component ($\bar{\mathbf{U}}$) and a fluctuating component ($\mathbf{u}'$):
+\begin{equation}
+	\mathbf{U} = \bar{\mathbf{U}} + \mathbf{u}'
+\end{equation}
+
+Substituting this into the Navier-Stokes equations and averaging yields the RANS equations, which introduce an additional term known as the Reynolds stress tensor ($\tau_{ij} = -\rho \overline{u'_i u'_j}$). To close the system of equations, the Boussinesq hypothesis is employed, relating the Reynolds stresses to the mean velocity gradients via an eddy viscosity ($\nu_t$):
+\begin{equation}
+	-\overline{u'_i u'_j} = \nu_t \left( \frac{\partial \bar{U}_i}{\partial x_j} + \frac{\partial \bar{U}_j}{\partial x_i} \right) - \frac{2}{3} k \delta_{ij}
+\end{equation}
+where $k$ is the turbulent kinetic energy. The effective viscosity in the momentum equation becomes $\nu_{eff} = \nu + \nu_t$. The specific turbulence model (e.g., $k-\epsilon$, $k-\omega$ SST) is selected at runtime using OpenFOAM's standard turbulence modelling framework (`turbulentTransportModel`), allowing for flexibility in choosing the appropriate closure for different flow regimes.
+
 \subsection{Volume of Fluid (VOF) Method}
 To capture the free surface interface between two immiscible fluids (e.g., air and water), the Volume of Fluid (VOF) method is employed. The phase fraction $\alpha$ is governed by the transport equation:
 
