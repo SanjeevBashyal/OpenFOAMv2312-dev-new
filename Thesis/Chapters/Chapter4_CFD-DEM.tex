@@ -32,7 +32,7 @@ The spatial model is constructed using the backgroundMesh object, which generate
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/background_mesh.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/background_mesh.png}
 	\caption{A typical backgroundMesh having $10\times 10\times 10$ regular hexahedral backgroundBlocks representing computational mesh}
 	\label{fig:A typical backgroundMesh}
 \end{figure}
@@ -58,7 +58,7 @@ These aggregates are then intersected with the background mesh using the interse
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/single_cube_sediment.png}
+	\includegraphics[width=0.4\textwidth]{Figures/Chapters/C05/single_cube_sediment.png}
 	\caption{Modelling of sediment using a cube geometry}
 	\label{fig:Modelling of sediment using a cube geometry}
 \end{figure}
@@ -75,27 +75,9 @@ Geometry intersection ensures integration of sediment geometry into the computat
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
 	\caption{Development of immersed boundary of particle}
 	\label{fig:Development of immersed boundary of particle}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/polyhedral_cell.png}
-	\caption{A polyhedral computational cell obtained after intersection with particle geometry}
-	\label{fig:A polyhedral computational cell obtained after intersection with particle geometry}
-\end{figure}
-
-\subsubsection{Convex Decomposition of a concave polyhedral cell}
-
-For concave polyhedral cell formed after the intersection of particle geometry with fluid cells, it is required the cell to be decomposed into convex parts for FVM discretization. The decomposition of concave cells is achieved with the help of Computational Geometry Algorithms Library (CGAL) which uses Nef Polyhedron, a finite set of half planes in 2D. The obtained CGAL polyhedras are converted to Foam polydrons to generate the mesh.\par
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/convex_decomposition.png}
-	\caption{Convex decomposition of a cell}
-	\label{fig:Convex decomposition of a cell}
 \end{figure}
 
 \subsubsection{Intersection with Closed Surfaces}
@@ -104,7 +86,7 @@ The intersectClosedSurface function handles the process of intersecting a cube a
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/cube_intersection.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/cube_intersection.png}
 	\caption{Intersection of a cube geometry with background mesh}
 	\label{fig:Intersection of a cube geometry with background mesh}
 \end{figure}
@@ -112,7 +94,7 @@ The intersectClosedSurface function handles the process of intersecting a cube a
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/multiple_intersections.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/multiple_intersections.png}
 	\caption{Introduction of multiple immersed boundaries in computational domain representing multiple particles}
 	\label{fig:Introduction of multiple immersed boundaries in computational domain representing multiple particles}
 \end{figure}
@@ -138,17 +120,17 @@ P-Equation:\par
 In addition to the momentum and pressure equations, the Volume of Fluid (VOF) method is employed to capture the free surface interface between two immiscible fluids (e.g., air and water). The phase fraction $\alpha$ is governed by the transport equation:
 
 \begin{equation}
-    \frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U} \alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
-    \label{eqn:alpha_eqn}
+	\frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U} \alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
+	\label{eqn:alpha_eqn}
 \end{equation}
 \equations{VOF Phase Fraction Equation}
 
 where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the interface. The physical properties of the fluid mixture, such as density $\rho$ and viscosity $\mu$, are calculated as weighted averages:
 \begin{equation}
-    \rho = \alpha \rho_1 + (1-\alpha) \rho_2
+	\rho = \alpha \rho_1 + (1-\alpha) \rho_2
 \end{equation}
 \begin{equation}
-    \mu = \alpha \mu_1 + (1-\alpha) \mu_2
+	\mu = \alpha \mu_1 + (1-\alpha) \mu_2
 \end{equation}
 
 PIMPLE solver implemented on OpenFOAM solves momentum and pressure equations within each time step, ensuring numerical stability and convergence, especially for cases involving complex geometries or high Reynolds numbers.\par
@@ -181,23 +163,23 @@ The interaction between particles is modeled using the Walton-Braun hysteretic s
 
 \textbf{Loading} ($\delta \ge \delta_{max}$):
 \begin{equation}
-    F_n = k_1 \delta
+	F_n = k_1 \delta
 \end{equation}
 
 \textbf{Unloading/Reloading} ($\delta < \delta_{max}$):
 \begin{equation}
-    F_n = k_2 (\delta - \delta_0)
+	F_n = k_2 (\delta - \delta_0)
 \end{equation}
 where $k_1$ is the loading stiffness, $k_2$ is the unloading stiffness, and $\delta_0$ is the residual overlap defined as $\delta_0 = \delta_{max} (1 - k_1/k_2)$. The effective coefficient of restitution is given by $e = \sqrt{k_1/k_2}$.
 
 A viscous damping force is also applied to stabilize the contact:
 \begin{equation}
-    F_{d,n} = -\gamma_n v_{rel,n}
+	F_{d,n} = -\gamma_n v_{rel,n}
 \end{equation}
 
 Tangential forces are modeled using a linear spring-dashpot system limited by Coulomb friction:
 \begin{equation}
-    F_t = \min \left( |k_t \xi - \gamma_t v_{rel,t}|, \mu F_n \right)
+	F_t = \min \left( |k_t \xi - \gamma_t v_{rel,t}|, \mu F_n \right)
 \end{equation}
 where $\xi$ is the tangential displacement integration.
 
@@ -209,7 +191,7 @@ In the implemented one-way coupling framework, the motion of discrete particles 
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/fluid_pressure.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/fluid_pressure.png}
 	\caption{Pressure force acting on the Sediment particle under Fluid Flow Domain}
 	\label{fig:Pressure force acting on the Sediment particle under Fluid Flow Domain}
 \end{figure}
@@ -220,42 +202,24 @@ In this approach, the CFD simulation computes the fluid flow field using a Euler
 \subsection{Immersed Boundary Method (IBM) Implementation}
 The coupling is realized through a Fictitious Domain method where the solid particles are mapped onto the Eulerian grid using a solid volume fraction field $\epsilon$.
 \begin{equation}
-    \epsilon_{cell} = 
-    \begin{cases} 
-    1 & \text{if cell center is inside particle} \\
-    0 & \text{otherwise}
-    \end{cases}
+	\epsilon_{cell} = 
+	\begin{cases} 
+		1 & \text{if cell center is inside particle} \\
+		0 & \text{otherwise}
+	\end{cases}
 \end{equation}
 
 The solid velocity field $\mathbf{U}_{solid}$ is constructed in the cells occupied by particles:
 \begin{equation}
-    \mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times \mathbf{r}
+	\mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times \mathbf{r}
 \end{equation}
 where $\mathbf{v}_p$ is the particle translational velocity, $\boldsymbol{\omega}_p$ is the angular velocity, and $\mathbf{r}$ is the distance vector from the particle center to the cell center.
 
 The fluid-to-particle force is calculated by integrating the pressure gradient over the particle volume:
 \begin{equation}
-    \mathbf{F}_{fluid \to particle} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell}
+	\mathbf{F}_{fluid \to particle} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell}
 \end{equation}
 
 \subsection{Flow Field Mapping at successive time interval}
 
 Mapping the flow field (pressure and velocity) from the previous time step's mesh to the current one is performed using interpolation techniques, where the flow variables from the old mesh are projected onto the new mesh based on spatial proximity or weighted averages. Additionally, boundary conditions like the no-slip condition are enforced during mapping to ensure that the fluid velocity matches the solid particle velocities at the fluid-solid interface. This coupling ensures the physical fidelity of the simulation by maintaining consistency in fluid-particle interactions and avoiding artifacts like spurious velocity or pressure fields caused by the mesh evolution.\par
-
-\section{Test Case C: Free Sedimentation of a particle in a static water column}
-
-The test case involves simulating the settling velocity of sediment particles (1.5 mm, 2 mm, and 2.5 mm) represented by cube geometry with density 2000 $kg/m^3$ in a static water column of dimension \textbf{1 cm $\boldsymbol{\mathrm{\times}}$ 40 cm $\boldsymbol{\mathrm{\times}}$ 1 cm} (X $\mathrm{\times}$ Y $\mathrm{\times}$ Z). A single sediment particle is introduced near the top of the column at \textbf{39 cm} along the Y-axis and allowed to fall under the influence of gravity. The simulation aims to measure the settling velocity and observe the effect of particle size on the settling velocity with the help of developed solver. Body forces gravity and surface forces pressure and drag due to fluid particle interaction govern the particle's motion in the DEM formulation. The rotational movement of the particle is disabled to confine the particle movement along a straight vertical line.\par
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test_case_free_sedimentation.png}
-	\caption{Geometry to simulate free sedimentation under a static water column with dimensions in cm}
-	\label{fig:Geometry to simulate free sedimentation under a static water column with dimensions in cm}
-\end{figure}
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test_case_mesh.png}
-	\caption{Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
-	\label{fig:Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
-\end{figure}
