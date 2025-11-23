@@ -43,11 +43,11 @@ The coupling between the fluid and solid phases was achieved by developing a new
 
 \section{Solver Validation and Comparative Analysis}
 
-This section details the validation of the developed solver through fundamental test cases and comparative analysis with existing state-of-the-art solvers.
+This section details the validation of the developed solver through fundamental test cases and comparative analysis with existing solvers.
 
 \subsection{Fundamental Validation Test Cases}
 
-To rigorously validate the developed solver, four fundamental test cases are established. These cases isolate specific physics: mechanical contact (DEM) and fluid-structure interaction (CFD-DEM).
+To validate the developed solver, four fundamental test cases are established. These cases isolate specific physics: mechanical contact (DEM) and fluid-structure interaction (CFD-DEM).
 
 \subsubsection{Test Case 1: DEM Validation - The Hysteretic Bounce}
 This test validates the GJK collision detection, Time Integration, and specifically the Walton-Braun Hysteretic force model.
@@ -72,18 +72,6 @@ e = \sqrt{\frac{k_1}{k_2}}
     \end{itemize}
 \end{itemize}
 
-\textbf{Analytical Target:}
-\begin{enumerate}
-    \item \textbf{Expected Coefficient of Restitution:} $e = \sqrt{10^5 / (4 \times 10^5)} = \sqrt{0.25} = 0.5$.
-    \item \textbf{Expected Rebound Height:} $H_1 = H_0 \times e^2 = 1.0 \times (0.5)^2 = 0.25\,m$.
-\end{enumerate}
-
-\textbf{Validation Metrics:}
-\begin{itemize}
-    \item \textbf{Vertical Position ($z$) vs. Time:} The peak of the second bounce should be exactly $0.25m$.
-    \item \textbf{Force vs. Overlap (Hysteresis Loop):} The normal force and penetration depth during impact should form a triangle-like shape, with slope $k_1$ during loading and $k_2$ during unloading.
-\end{itemize}
-
 \subsubsection{Test Case 2: DEM Validation - Sliding Block on an Inclined Plane}
 This test validates the Tangential Force Model, Coulomb Friction Limit, and Gravity Projection.
 
@@ -100,20 +88,6 @@ For a block on an incline $\theta$:
     \item \textbf{Domain:} Fixed rectangular floor tilted at $\theta = 30^\circ$.
     \item \textbf{Particle:} Cube ($L=0.1\,m$, $m=1.0\,kg$).
     \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.3$.
-\end{itemize}
-
-\textbf{Analytical Target:}
-\begin{enumerate}
-    \item \textbf{Expected Acceleration:}
-    \begin{equation}
-    a = 9.81 \times (\sin(30^\circ) - 0.3 \cos(30^\circ)) \approx 2.356 \, m/s^2
-    \end{equation}
-\end{enumerate}
-
-\textbf{Validation Metrics:}
-\begin{itemize}
-    \item \textbf{Velocity ($v$) vs. Time:} The slope should be exactly $2.356$.
-    \item \textbf{Tangential Force Magnitude:} Should equal $\mu m g \cos(\theta) \approx 2.55 \, N$.
 \end{itemize}
 
 \subsubsection{Test Case 3: CFD-DEM Validation - Terminal Velocity of a Settling Cube}
@@ -133,22 +107,6 @@ F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v
     \item \textbf{Initial State:} Released from rest, fully submerged.
 \end{itemize}
 
-\textbf{Analytical Target:}
-\begin{enumerate}
-    \item \textbf{Net Driving Force:} $F_{net} = F_g - F_b = 0.15696 - 0.07848 = 0.07848 \, N$.
-    \item \textbf{Expected Terminal Velocity ($v_t$):}
-    \begin{equation}
-    v_t = \sqrt{\frac{2(F_g - F_b)}{\rho_f A C_d}} \approx 0.611 \, m/s
-    \end{equation}
-    (Assuming $C_d \approx 1.05$ for a cube).
-\end{enumerate}
-
-\textbf{Validation Metrics:}
-\begin{itemize}
-    \item \textbf{Particle Velocity ($v_z$) vs. Time:} Should asymptotically approach $\approx 0.61 \, m/s$.
-    \item \textbf{Fluid Velocity Field:} A recirculation zone (wake) should form behind the cube.
-\end{itemize}
-
 \subsubsection{Test Case 4: CFD-DEM Validation - The Floating Cube Equilibrium}
 This test validates the VOF-IBM Coupling and Free-Surface Intersection.
 
@@ -164,18 +122,6 @@ Archimedes' principle for a floating object:
     \item \textbf{Particle:} Cube ($L=0.1\,m$).
     \item \textbf{Parameters:} $\rho_f = 1000 \, kg/m^3$, $\rho_s = 500 \, kg/m^3$.
     \item \textbf{Initial State:} Drop from slightly above water.
-\end{itemize}
-
-\textbf{Analytical Target:}
-\begin{enumerate}
-    \item \textbf{Equilibrium Depth:} $h_{sub} = L (\rho_s/\rho_f) = 0.05\,m$ (Half-submerged).
-    \item \textbf{Oscillation Period:} $T = 2\pi \sqrt{h_{sub} / g} \approx 0.448 \, s$.
-\end{enumerate}
-
-\textbf{Validation Metrics:}
-\begin{itemize}
-    \item \textbf{Vertical Position:} Should settle at $z = Y_{water} + (L/2) - h_{sub}$.
-    \item \textbf{Volume Fraction Field:} Inside block $\epsilon=1$. At water line, cells should be partially solid and partially water.
 \end{itemize}
 
 \subsection{Study Test Cases}
