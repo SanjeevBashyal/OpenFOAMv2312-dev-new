@@ -1,88 +1,199 @@
-\chapter{CFD-DEM IMPLEMENTATION IN OPENFOAM} 
-\label{chapter4} 
+\chapter{ CFD-DEM IMPLEMENTATION IN OPENFOAM} 
+\label{chapter5} 
 
-The CFD-DEM solver, \texttt{fineDEMfoam}, leverages the OpenFOAM framework to simulate fluid-particle interactions using an Immersed Boundary Method (IBM). The core of the implementation focuses on mesh generation, accurate geometry intersection, and the two-way coupling between the Eulerian fluid phase and the Lagrangian solid phase.
+The CFD-DEM solver leverages the OpenFOAM framework to simulate fluid-particle interactions. The core of the implementation focuses on mesh generation, the definition of sediment flow domains, modeling spaces, sediment geometries, and ensuring accurate geometry intersection for computational purposes.\par
 
 \section{Geometry and Meshing}
-Mesh generation forms the foundation of the CFD-DEM simulation. The solver utilizes OpenFOAM's standard finite volume mesh classes (`fvMesh`) to discretize the computational domain.
 
-\subsection{Computational Domain}
-The flow domain is discretized into a grid of hexahedral cells. Unlike body-fitted meshes, the grid in this IBM approach does not conform to the particle boundaries. Instead, the mesh remains static (or moves independently), and the presence of particles is accounted for by modifying the governing equations in the cells intersected by the solid phase.
+Mesh generation forms the foundation of the CFD-DEM simulation, as it defines the computational domain and partitions the space into discrete elements for numerical analysis. The backgroundMesh class is responsible for this process, providing flexibility to model sediment-laden flows in complex geometries.\par
 
-\section{Boundary Interpretation and Field Mapping}
-A critical component of the IBM implementation is the mapping of the discrete particle geometry onto the Eulerian grid. This is handled by the `calculateIBM.H` routine.
+\subsection{Sediment involved Flow Domain}
 
-\subsection{Solid Volume Fraction ($\epsilon$)}
-The solid volume fraction field, $\epsilon$, represents the ratio of solid volume to cell volume in each computational cell. It serves as a mask to distinguish between fluid ($\epsilon = 0$), solid ($\epsilon = 1$), and interface ($\epsilon \in (0, 1)$) regions.
+The computational domain represents a flow field interacting with sediment particles, which is a fundamental part of the CFD-DEM coupling. The domain is discretized using the backgroundMesh class, ensuring an adaptable grid resolution. This approach facilitates handling the complex interactions between fluid and sediment aggregates while maintaining computational efficiency.\par
 
-In the current implementation, a simplified spherical approximation is used for efficiency:
+The flow domain is bound by a three-dimensional Cartesian grid defined by:\par
+
+\begin{enumerate}
+	\item  \textbf{Bounds}: Specified by meshMin\_ and meshMax\_, which determine the global minimum and maximum coordinates.\par
+	\item  \textbf{Resolution}: A scalar value, resolution\_, sets the grid's fineness. This influences the discretization level, balancing accuracy, and computational cost.\par
+\end{enumerate}
+
+The \textbf{backgroundMesh} class systematically subdivides the domain into blocks, with each block containing a specific number of cells based on the resolution. The cells in this grid adapt to include sediment geometries through an intersection algorithm. Using functions like intersectCube and intersectCubes, sediment boundaries are identified and incorporated into the mesh.\par
+
+\subsection{Modelling of Space}
+
+The spatial model is constructed using the backgroundMesh object, which generates a hierarchical data structure (backgroundBlocks\_) to store individual blocks of the domain. Key steps in this process include:\par
+
+\begin{enumerate}
+	\item  \textbf{Vertex Creation}: Eight vertices for each block are created using the createVertices function.\par
+	\item  \textbf{Dynamic Allocation}: The createListPointers function dynamically allocates memory for the hierarchical block structure.\par
+	\item  \textbf{Point Location}: The algorithm identifies which block a given point belongs to using getBlockIndexContainingPoint.\par
+\end{enumerate}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/background_mesh.png}
+	\caption{A typical backgroundMesh having $10\times 10\times 10$ regular hexahedral backgroundBlocks representing computational mesh}
+	\label{fig:A typical backgroundMesh}
+\end{figure}
+
+\subsection{Modelling of Sediments}
+
+Sediments are modelled as discrete aggregates represented by the cubeAggregate and cubeAggregates classes. Each sediment aggregate is defined by:\par
+
+\begin{enumerate}
+	\item  \textbf{Geometry}: Local and global point fields (localPoints\_ and globalPoints\_) describe the sediment's shape.\par
+	\item  \textbf{Boundary Representation}: The pointList points\_ and the faceList faces\_ and  provides a detailed geometry using quadrilateral face elements derived from functions like createQuadFaces.\par
+\end{enumerate}
+
+The sediments are introduced into the flow domain using a particle size distribution (PSD) to control size variation. The cubeAggregates class generates sediment particles with attributes like size and orientation, leveraging functions such as:\par
+
+\begin{enumerate}
+	\item  generateAggregates: Generates sediment aggregates of varying sizes and orientations.\par
+	\item  translate and rotate: Apply spatial transformations to position and orient sediments within the flow domain.\par
+	\item  locate: Determines the precise placement of the sediment within the computational grid.\par
+\end{enumerate}
+
+These aggregates are then intersected with the background mesh using the intersectCube method, which identifies and incorporates sediment geometry into the fluid mesh.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/single_cube_sediment.png}
+	\caption{Modelling of sediment using a cube geometry}
+	\label{fig:Modelling of sediment using a cube geometry}
+\end{figure}
+
+\subsection{Geometry Intersection}
+
+Geometry intersection ensures integration of sediment geometry into the computational domain as solid boundaries. The focus is on detecting and resolving interactions between complex surfaces, such as aggregates and the background block, to ensure accurate physical representation in sediment flow modeling. Key components include methods for surface intersection detection, cut face generation, and data merging for intersected geometries.\par
+
+\begin{enumerate}
+	\item  \textbf{Bounding Box Matching}: Each sediment's bounding box (getBoundBox) is mapped to the corresponding blocks in the computational domain.\par
+	\item  \textbf{Closed Surface Intersections}: The sediment's boundary faces are checked for intersections with the domain grid.\par
+	\item  \textbf{Dynamic Updates}: The mesh dynamically adapts by updating vertices, faces, and cells based on sediment geometry.\par
+\end{enumerate}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
+	\caption{Development of immersed boundary of particle}
+	\label{fig:Development of immersed boundary of particle}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/polyhedral_cell.png}
+	\caption{A polyhedral computational cell obtained after intersection with particle geometry}
+	\label{fig:A polyhedral computational cell obtained after intersection with particle geometry}
+\end{figure}
+
+\subsubsection{Convex Decomposition of a concave polyhedral cell}
+
+For concave polyhedral cell formed after the intersection of particle geometry with fluid cells, it is required the cell to be decomposed into convex parts for FVM discretization. The decomposition of concave cells is achieved with the help of Computational Geometry Algorithms Library (CGAL) which uses Nef Polyhedron, a finite set of half planes in 2D. The obtained CGAL polyhedras are converted to Foam polydrons to generate the mesh.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/convex_decomposition.png}
+	\caption{Convex decomposition of a cell}
+	\label{fig:Convex decomposition of a cell}
+\end{figure}
+
+\subsubsection{Intersection with Closed Surfaces}
+
+The intersectClosedSurface function handles the process of intersecting a cube aggregate's triangulated surface (faces and points) with a backgroundBlock. It identifies intersection points and reconstructs the geometry of the intersected surfaces.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/cube_intersection.png}
+	\caption{Intersection of a cube geometry with background mesh}
+	\label{fig:Intersection of a cube geometry with background mesh}
+\end{figure}
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/multiple_intersections.png}
+	\caption{Introduction of multiple immersed boundaries in computational domain representing multiple particles}
+	\label{fig:Introduction of multiple immersed boundaries in computational domain representing multiple particles}
+\end{figure}
+
+\section{Fluid Phase Modelling}
+
+The fluid phase in the solver is modelled using locally averaged incompressible Navier Stokes equations which are given as follows:\par
+
+U-Equation:\par
 \begin{equation}
-    \epsilon_i = 
-    \begin{cases} 
-      1 & \text{if } |\mathbf{x}_{cell} - \mathbf{x}_{particle}| < R_{particle} \\
-      0 & \text{otherwise}
-   \end{cases}
+	\frac{\partial \boldsymbol{\mathrm{U}}}{\partial t}+\mathrm{\nabla }\cdot \left[\boldsymbol{\mathrm{U}}\times \boldsymbol{\mathrm{U}}-{\boldsymbol{\mathrm{v}}}_m\times \boldsymbol{\mathrm{U}}\right]-\nu {\mathrm{\nabla }}^2\boldsymbol{\mathrm{U}}=-\mathrm{\nabla }p
+	\label{eqn:5_1}
 \end{equation}
-where $\mathbf{x}_{cell}$ is the cell center, $\mathbf{x}_{particle}$ is the particle center, and $R_{particle}$ is the particle radius.
+\equations{U-Equation for Fluid Phase}
 
-\subsection{Solid Velocity Field ($\mathbf{U}_{solid}$)}
-The velocity of the solid phase is mapped to the grid to enforce the no-slip condition. The solid velocity at a cell center $\mathbf{x}_{cell}$ is calculated based on the particle's translational velocity $\mathbf{v}_p$ and angular velocity $\boldsymbol{\omega}_p$:
+P-Equation:\par
 \begin{equation}
-    \mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times (\mathbf{x}_{cell} - \mathbf{x}_{particle})
+	\mathrm{\nabla }\cdot \left[\frac{1}{a}\mathrm{\nabla }p\right]=\mathrm{\nabla }\cdot \left[{\boldsymbol{\mathrm{U}}}^*+{\boldsymbol{\mathrm{v}}}_m\right]
+	\label{eqn:5_2}
 \end{equation}
+\equations{P-Equation for Fluid Phase}
 
-\section{Particle Motion Modelling}
-The motion of sediment particles is governed by Newton's laws of motion, solved within the Lagrangian framework.
+PIMPLE solver implemented on OpenFOAM solves momentum and pressure equations within each time step, ensuring numerical stability and convergence, especially for cases involving complex geometries or high Reynolds numbers.\par
 
-\subsection{Governing Equations}
-For a particle $i$ of mass $m_i$ and moment of inertia $I_i$, the equations of motion are:
+\section{Lagrangian Mechanics and Discrete Element Method }
+
+The governing equation for particle motion is given as:\par
+
+Newton's second law of motion:\par
 \begin{equation}
-	m_i\frac{d\mathbf{v}_i}{dt} = \mathbf{F}^{g}_{i} + \mathbf{F}^{f}_{i} + \mathbf{F}^{c}_{i}
+	m_i\frac{d^2{\boldsymbol{x}}_{\boldsymbol{i}}}{dt^2}={\boldsymbol{F}}^{\boldsymbol{g}}_{\boldsymbol{i}}+{\boldsymbol{F}}^{\boldsymbol{f}}_{\boldsymbol{i}}
+	\label{eqn:5_3}
 \end{equation}
-\begin{equation}
-    I_i\frac{d\boldsymbol{\omega}_i}{dt} = \mathbf{T}^{f}_{i} + \mathbf{T}^{c}_{i}
-\end{equation}
-where $\mathbf{F}^{g}$ is gravity, $\mathbf{F}^{f}$ is the fluid force, and $\mathbf{F}^{c}$ is the contact force from collisions.
+\equations{Newton's Second Law for Particle Motion}
 
-\subsection{Time Integration}
-The particle state is updated using a semi-implicit Euler integration scheme:
+The velocity and position of the particle is updated using the equation:\par
 \begin{equation}
-	\mathbf{v}_{i, t+\Delta t} = \mathbf{v}_{i, t} + \frac{\mathbf{F}_{i}}{m_i} \Delta t
+	{\boldsymbol{v}}_{\boldsymbol{i}\boldsymbol{,\ \ }\boldsymbol{t}}={\boldsymbol{v}}_{\boldsymbol{i},\boldsymbol{t}\boldsymbol{-}\boldsymbol{1}}+{\boldsymbol{a}}_{\boldsymbol{i},\boldsymbol{t}}\cdot t
+	\label{eqn:5_4}
 \end{equation}
+\equations{Particle Velocity Update}
 \begin{equation}
-	\mathbf{x}_{i, t+\Delta t} = \mathbf{x}_{i, t} + \mathbf{v}_{i, t+\Delta t} \Delta t
+	{\boldsymbol{x}}_{\boldsymbol{i}\boldsymbol{,\ \ }\boldsymbol{t}}={\boldsymbol{x}}_{\boldsymbol{i},\boldsymbol{t}\boldsymbol{-}\boldsymbol{1}}+{\boldsymbol{v}}_{\boldsymbol{i},\boldsymbol{t}}\cdot t
+	\label{eqn:5_5}
 \end{equation}
+\equations{Particle Position Update}
 
-\section{Fluid Phase Modelling and Volume of Fluid}
-The fluid phase is modeled using the incompressible Navier-Stokes equations, modified to account for the presence of the solid phase.
+\section{CFD -- DEM Coupling}
 
-\subsection{Volume of Fluid (VOF) Method}
-The free surface is captured using the VOF method, where a phase fraction field $\alpha$ distinguishes between water ($\alpha=1$) and air ($\alpha=0$). The interface is tracked by solving the advection equation:
-\begin{equation}
-    \frac{\partial \alpha}{\partial t} + \nabla \cdot (\mathbf{U}\alpha) + \nabla \cdot (\mathbf{U}_r \alpha (1-\alpha)) = 0
-\end{equation}
-where the last term is an artificial compression term to sharpen the interface.
+\subsection{One Way Coupling}
 
-\subsection{Momentum Equation with IBM Forcing}
-The momentum equation is solved for the fluid velocity $\mathbf{U}$:
-\begin{equation}
-	\frac{\partial \rho \mathbf{U}}{\partial t} + \nabla \cdot (\rho \mathbf{U} \mathbf{U}) - \nabla \cdot (\mu_{eff} \nabla \mathbf{U}) = -\nabla p_{rgh} - \mathbf{g} \cdot \mathbf{x} \nabla \rho + \mathbf{F}_{IBM}
-\end{equation}
-The Immersed Boundary Method forcing is applied explicitly after the momentum predictor step to enforce the solid velocity within the particle domain. The velocity field is modified as:
-\begin{equation}
-    \mathbf{U}_{new} = (1 - \epsilon)\mathbf{U}_{predicted} + \epsilon \mathbf{U}_{solid}
-\end{equation}
-This volume penalization technique ensures that in cells fully occupied by the solid ($\epsilon=1$), the fluid velocity matches the solid velocity, while in fluid cells ($\epsilon=0$), the predicted fluid velocity is retained.
+In the implemented one-way coupling framework, the motion of discrete particles is influenced by forces from both the fluid phase and gravity, while the particles do not exert any feedback on the fluid flow.\par
 
-\section{Coupling}
-The coupling between the phases is bidirectional and is handled in the `coupling.H` file.
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/fluid_pressure.png}
+	\caption{Pressure force acting on the Sediment particle under Fluid Flow Domain}
+	\label{fig:Pressure force acting on the Sediment particle under Fluid Flow Domain}
+\end{figure}
 
-\subsection{Fluid-to-Particle Coupling}
-The forces exerted by the fluid on the particles are calculated by integrating the fluid stress over the particle volume. The primary contribution is the pressure gradient force:
-\begin{equation}
-    \mathbf{F}_{p} = \sum_{cells} (-\nabla p \cdot V_{cell} \cdot \epsilon_{cell})
-\end{equation}
-This force is accumulated for each particle and applied during the DEM motion update.
 
-\subsection{Particle-to-Fluid Coupling}
-The effect of particles on the fluid is captured through the IBM forcing term described above. By modifying the fluid velocity field to match the particle velocity, the solver implicitly accounts for the displacement of fluid by the solid bodies and the resulting drag and wake effects.
+In this approach, the CFD simulation computes the fluid flow field using a Eulerian framework, while the particles are tracked individually in a Lagrangian framework. The fluid forces are interpolated to the particle positions, ensuring accurate representation of the interaction between the fluid and the discrete particles.\par
+
+\subsection{Flow Field Mapping at successive time interval}
+
+Mapping the flow field (pressure and velocity) from the previous time step's mesh to the current one is performed using interpolation techniques, where the flow variables from the old mesh are projected onto the new mesh based on spatial proximity or weighted averages. Additionally, boundary conditions like the no-slip condition are enforced during mapping to ensure that the fluid velocity matches the solid particle velocities at the fluid-solid interface. This coupling ensures the physical fidelity of the simulation by maintaining consistency in fluid-particle interactions and avoiding artifacts like spurious velocity or pressure fields caused by the mesh evolution.\par
+
+\section{Test Case C: Free Sedimentation of a particle in a static water column}
+
+The test case involves simulating the settling velocity of sediment particles (1.5 mm, 2 mm, and 2.5 mm) represented by cube geometry with density 2000 $kg/m^3$ in a static water column of dimension \textbf{1 cm $\boldsymbol{\mathrm{\times}}$ 40 cm $\boldsymbol{\mathrm{\times}}$ 1 cm} (X $\mathrm{\times}$ Y $\mathrm{\times}$ Z). A single sediment particle is introduced near the top of the column at \textbf{39 cm} along the Y-axis and allowed to fall under the influence of gravity. The simulation aims to measure the settling velocity and observe the effect of particle size on the settling velocity with the help of developed solver. Body forces gravity and surface forces pressure and drag due to fluid particle interaction govern the particle's motion in the DEM formulation. The rotational movement of the particle is disabled to confine the particle movement along a straight vertical line.\par
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test_case_free_sedimentation.png}
+	\caption{Geometry to simulate free sedimentation under a static water column with dimensions in cm}
+	\label{fig:Geometry to simulate free sedimentation under a static water column with dimensions in cm}
+\end{figure}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test_case_mesh.png}
+	\caption{Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
+	\label{fig:Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
+\end{figure}
