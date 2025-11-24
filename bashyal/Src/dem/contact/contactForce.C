@@ -236,9 +236,9 @@ namespace Bashyal
         }
         if (FnMag < 0) FnMag = 0;
         
-        // Normal points from P to W
-        // Force on P should be opposite to normal
-        Foam::vector Fn = -FnMag * normal;
+        // Normal points from P to W (Wait, normal is Wall -> Particle in my GJK fix)
+        // If normal is Wall -> Particle, Force on P should be along normal (positive)
+        Foam::vector Fn = FnMag * normal;
         
         // Damping
         Foam::vector vRelN, vRelT;

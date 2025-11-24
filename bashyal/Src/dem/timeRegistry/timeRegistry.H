@@ -25,9 +25,16 @@ class timeRegistry {
     Foam::scalar lastWriteTime_;
     bool writeAtStart_;
     bool writeAtEnd_;
+    struct StaticObject {
+        std::string name;
+        std::string filename;
+    };
+    std::vector<StaticObject> staticObjects_;
+
 public:
     timeRegistry(Foam::scalar timeStep, Foam::scalar endTime, const std::string& outputDir = "VTK_output");
     void addParticle(particle& p, const std::string& name);
+    void addStaticObject(const std::string& name, const std::string& filename);
     // Advance internal time and write outputs for registered particles if due.
     // Note: physics state should be advanced externally before calling this.
     void advanceTime();

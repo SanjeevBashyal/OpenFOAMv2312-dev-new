@@ -378,16 +378,33 @@ namespace Bashyal
         const Foam::scalar crustWidthP
     ) const
     {
-        // Placeholder for particle-wall
-        // Similar logic but using supportParticleWall
         ContactInfo contact;
         
-        // Simplified: Use existing logic for now or implement full GJK for wall
-        // For Plane, GJK is overkill, but good for consistency.
-        // For now, let's keep the simple distance check for walls if possible,
-        // OR implement the GJK loop for walls too.
-        
-        // Let's implement GJK loop for consistency
+        if (w.type() == WallType::PLANE)
+        {
+            Foam::vector n = w.normal();
+            Foam::point p0 = w.position();
+            
+            // Find the point on particle furthest in direction -n (into the wall)
+            Foam::point deepestPt = p.getSupport(-n);
+            
+            // Distance from plane: (pt - p0) . n
+            Foam::scalar dist = (deepestPt - p0) & n;
+            
+            if (dist < crustWidthP)
+            {
+                contact.isContact = true;
+                contact.depth = -dist; // Penetration depth
+                contact.normal = n;    // Normal points out of wall
+                contact.contactPoint = deepestPt;
+                contact.contactPoints.append(deepestPt);
+                
+                // TODO: For face-face contact, we should find all vertices within tolerance
+            }
+            return contact;
+        }
+
+        // Fallback to GJK for other wall types (Cylinder, Sphere)
         Foam::vector d = w.position() - p.position(); // Rough direction
         if (Foam::mag(d) < Foam::SMALL) d = Foam::vector(0, 0, 1);
         

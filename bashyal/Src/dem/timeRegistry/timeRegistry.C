@@ -19,6 +19,11 @@ void timeRegistry::addParticle(particle& p, const std::string& name) {
     vtpFiles_[name] = {};
 }
 
+void timeRegistry::addStaticObject(const std::string& name, const std::string& filename) {
+    staticObjects_.push_back({name, filename});
+    vtpFiles_[name] = {};
+}
+
 void timeRegistry::advanceTime() {
     currentTime_ += timeStep_;
     // Physics is updated externally (e.g., Bullet). Only handle writing.
@@ -34,6 +39,12 @@ void timeRegistry::advanceTime() {
         p->writeVtp(vtpName.str());
         vtpFiles_[name].push_back({vtpName.str(), currentTime_});
     }
+
+    // Handle static objects
+    for (const auto& obj : staticObjects_) {
+        vtpFiles_[obj.name].push_back({obj.filename, currentTime_});
+    }
+
     lastWriteTime_ = currentTime_;
 }
 
