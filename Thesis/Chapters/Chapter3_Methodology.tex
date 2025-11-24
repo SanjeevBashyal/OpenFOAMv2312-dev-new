@@ -90,7 +90,21 @@ For a block on an incline $\theta$:
     \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.3$.
 \end{itemize}
 
-\subsubsection{Test Case 3: CFD-DEM Validation - Free Sedimentation of a settling cube}
+\subsubsection{Test Case 3: DEM Validation - Random Loose Packing}
+This test validates multi-body contact stability, geometric exclusion, and energy dissipation in a dense granular system.
+
+\textbf{Theory:}
+Random loose packing of frictional cubes is expected to yield a solid fraction $\phi \approx 0.50$. The system settles when kinetic energy dissipates via inelastic collisions and friction.
+
+\textbf{Setup:}
+\begin{itemize}
+    \item \textbf{Domain:} $10L \times 10L$ container with infinite mass walls.
+    \item \textbf{Particles:} 200 Cubes ($L=0.05\,m$, $m=1.0\,kg$).
+    \item \textbf{Process:} Particles are poured into the container from a random position at the top.
+    \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.5$, $e = 0.3$.
+\end{itemize}
+
+\subsubsection{Test Case 4: CFD-DEM Validation - Free Sedimentation of a settling cube}
 This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the free fall of a single settling cube in a quiescent fluid, with results compared against CFDEM Coupling and theoretical predictions. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces.
 
 The computational domain consists of a static water column of dimension \textbf{1 cm $\boldsymbol{\mathrm{\times}}$ 40 cm $\boldsymbol{\mathrm{\times}}$ 2 cm} (X $\mathrm{\times}$ Y $\mathrm{\times}$ Z) with mesh resolution of 0.005mm. A single particle with sizes (1.5 mm, 2 mm, and 2.5 mm) represented by cube geometry with density 2000 is introduced near the top of the column at \textbf{39 cm} along the Y-axis and allowed to fall under the influence of gravity. Simulations are performed using the newly developed "fineDEMfoam" solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
@@ -124,7 +138,7 @@ F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v
 	\label{fig:Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
 \end{figure}
 
-\subsubsection{Test Case 4: CFD-DEM Validation - The Floating Cube Equilibrium}
+\subsubsection{Test Case 5: CFD-DEM Validation - The Floating Cube Equilibrium}
 This test validates the VOF-IBM Coupling and Free-Surface Intersection.
 
 \textbf{Theory:}

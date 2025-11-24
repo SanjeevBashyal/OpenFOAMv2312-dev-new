@@ -3,7 +3,64 @@
 \label{chapter5}
 
 
-\section{OpenFOAM based CFD-DEM Solver: Free sedimentation of a particle in a static water column }
+
+\section{DEM Validation}
+
+This section presents the results of the fundamental DEM validation test cases, verifying the correct implementation of contact physics, time integration, and force models.
+
+\subsection{Test Case 1: Hysteretic Bounce}
+The hysteretic bounce test validates the energy dissipation mechanism in the normal contact model. A 1 kg cube was dropped from 1 m height onto a rigid floor.
+
+Figure \ref{fig:bounce_height} shows the particle height over time. The peak height decreases with each bounce, indicating energy dissipation. Figure \ref{fig:bounce_velocity} illustrates the velocity evolution. The velocity magnitude decreases after each impact, consistent with the specified coefficient of restitution.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_height.png}
+    \caption{Hysteretic Bounce: Particle Height vs Time}
+    \label{fig:bounce_height}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_velocity.png}
+    \caption{Hysteretic Bounce: Particle Velocity vs Time}
+    \label{fig:bounce_velocity}
+\end{figure}
+
+\subsection{Test Case 2: Sliding Block}
+The sliding block test validates the tangential force model and Coulomb friction. A 1 kg block slides down a $30^\circ$ incline with $\mu=0.3$.
+
+Figure \ref{fig:sliding_velocity} compares the simulated velocity with the theoretical prediction. The simulated acceleration is approximately $2.30 \, m/s^2$, which is in excellent agreement with the theoretical value of $2.36 \, m/s^2$.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sliding_velocity.png}
+    \caption{Sliding Block: Velocity vs Time}
+    \label{fig:sliding_velocity}
+\end{figure}
+
+\subsection{Test Case 3: Random Loose Packing}
+The random packing test validates multi-body interactions and geometric exclusion. 200 cubes were poured into a container.
+
+Figure \ref{fig:packing_ke} shows the decay of kinetic energy, confirming that the system settles into a stable static state. Figure \ref{fig:packing_phi} shows the evolution of the solid fraction, which stabilizes around $\phi \approx 0.50$, consistent with random loose packing of cubes.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_ke.png}
+    \caption{Random Packing: Kinetic Energy Decay}
+    \label{fig:packing_ke}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_phi.png}
+    \caption{Random Packing: Solid Fraction Evolution}
+    \label{fig:packing_phi}
+\end{figure}
+
+\section{CFD-DEM Validation}
+
+\subsection{Test Case 4: Free sedimentation of a particle in a static water column}
 
 The release of sediment particles at rest at a height of 0.39m from the base of static water column is characterized by a sharp increase in velocity for the first 50 ms reaching a maximum velocity 100 ms.\par
 
