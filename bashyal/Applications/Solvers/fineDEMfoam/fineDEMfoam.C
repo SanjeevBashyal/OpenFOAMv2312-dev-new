@@ -51,10 +51,14 @@ Description
 #include "fvOptions.H"
 #include "CorrectPhi.H"
 #include "fvcSmooth.H"
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 // DEM Includes
 #include "particle.H"
 #include "particlesGenerator.H"
+#include "timeRegistry.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -98,8 +102,28 @@ int main(int argc, char *argv[])
     
     if (particles.size() > 0)
     {
-        particles[0].setPosition(point(0.5, 0.05, 0.05));
-        particles[0].setDC(0.02); // Make it smaller to fit
+        // Test Case 5: Floating Cube
+        // Domain: 0.3 x 1.0 x 0.3
+        // Particle: 0.1m Cube
+        // Density: 500 kg/m3
+        // Mass = 500 * 0.1^3 = 0.5 kg
+        // Position: (0.15, 0.62, 0.15) (Bottom at 0.57, Water at 0.5)
+        particles[0].setPosition(point(0.15, 0.62, 0.15));
+        particles[0].setDC(0.1); 
+        particles[0].setMass(0.5);
+    }
+
+    std::ofstream dataFile("sedimentation_data.csv");
+    dataFile << "Time,Y,Vy" << std::endl;
+
+    // Initialize Time Registry
+    // Note: runTime.endTime().value() might be large, but we can update it
+    Bashyal::timeRegistry timeReg(runTime.deltaT().value(), runTime.endTime().value(), "VTK");
+    timeReg.setWriteInterval(runTime.controlDict().get<scalar>("writeInterval")); // Sync with OpenFOAM write interval
+    
+    if (particles.size() > 0)
+    {
+        timeReg.addParticle(particles[0], "particle1");
     }
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -196,6 +220,18 @@ int main(int argc, char *argv[])
         }
 
         runTime.write();
+
+        // Update time registry
+        timeReg.setCurrentTime(runTime.value());
+        timeReg.advanceTime(); // This handles writing VTPs if interval is met
+        timeReg.writeTimeSeries(); // Update PVD file
+
+        if (particles.size() > 0)
+        {
+             dataFile << runTime.timeName() << "," 
+                      << particles[0].position().y() << "," 
+                      << particles[0].velocity().y() << std::endl;
+        }
 
         runTime.printExecutionTime(Info);
     }

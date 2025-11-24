@@ -8,21 +8,48 @@ forAll(particles, pI)
 {
     const Bashyal::particle& p = particles[pI];
     const point& center = p.position();
-    scalar radius = p.getDC() * 0.5; // Approximation using characteristic diameter
+    scalar radius = p.getDC() * 0.5;
+    scalar supportRadius = radius * 1.05; // Reduced to 1.05 for sharp interface
+    scalar particleVolume = 4.0/3.0 * Foam::constant::mathematical::pi * pow3(radius);
+    // For cube:
+    if (abs(p.getDC() - 0.002) < 1e-6 || abs(p.getDC() - 0.003) < 1e-6 || abs(p.getDC() - 0.1) < 1e-6) 
+    {
+        particleVolume = pow3(p.getDC());
+    }
 
-    // Iterate over all cells
-    // TODO: Optimize using mesh search or bounding box
+    scalar totalWeight = 0.0;
+    DynamicList<label> affectedCells;
+    DynamicList<scalar> weights;
+
+    // Iterate over all cells (optimize later)
     forAll(mesh.C(), celli)
     {
         scalar dist = mag(mesh.C()[celli] - center);
         
-        // Simple sphere check
-        if (dist < radius)
+        if (dist < supportRadius)
         {
-            epsilon[celli] = 1.0;
+            // Kernel function (simple linear)
+            scalar w = (1.0 - dist/supportRadius);
             
-            // Calculate solid velocity at cell center
-            // u_solid = v + omega x r
+            affectedCells.append(celli);
+            weights.append(w);
+            totalWeight += w * mesh.V()[celli];
+        }
+    }
+
+    // Normalize and assign epsilon
+    if (totalWeight > SMALL)
+    {
+        scalar scale = particleVolume / totalWeight;
+        forAll(affectedCells, i)
+        {
+            label celli = affectedCells[i];
+            epsilon[celli] += weights[i] * scale; // Additive for multiple particles
+            
+            // Cap at 1.0 - REMOVED to conserve volume for force calculation
+            // if (epsilon[celli] > 1.0) epsilon[celli] = 1.0;
+            
+            // Calculate solid velocity
             vector r = mesh.C()[celli] - center;
             Usolid[celli] = p.velocity() + (p.angularVelocity() ^ r);
         }

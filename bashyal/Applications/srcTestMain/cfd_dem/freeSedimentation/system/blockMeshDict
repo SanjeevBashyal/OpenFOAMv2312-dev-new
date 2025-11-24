@@ -1,0 +1,81 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+// Slope 1:10 (V:H) -> angle = atan(0.1)
+// Length = 1.0 m (horizontal projection)
+// Height = 0.1 m
+// Width = 0.1 m
+
+// Vertices
+vertices
+(
+    (0 0 0)             // 0
+    (0.02 0 0)          // 1
+    (0.02 1.0 0)        // 2
+    (0 1.0 0)           // 3
+    (0 0 0.02)          // 4
+    (0.02 0 0.02)       // 5
+    (0.02 1.0 0.02)     // 6
+    (0 1.0 0.02)        // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (20 1000 20) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    top
+    {
+        type patch;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+    bottom
+    {
+        type wall;
+        faces
+        (
+            (0 1 5 4)
+        );
+    }
+    walls
+    {
+        type wall;
+        faces
+        (
+            (0 4 7 3)   // Left (x=0)
+            (1 2 6 5)   // Right (x=0.01)
+            (0 3 2 1)   // Back (z=0)
+            (4 5 6 7)   // Front (z=0.02)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

@@ -323,6 +323,7 @@ namespace Bashyal
         void setUpdateTorque(bool update) { updateTorque_ = update; }
         void setDC(Foam::scalar dc) { dC_ = dc; }
         void setIsActive(bool active) { isActive_ = active; }
+        void setMass(Foam::scalar m) { mass_ = m; }
     };
 }
 

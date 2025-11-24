@@ -60,7 +60,40 @@ Figure \ref{fig:packing_ke} shows the decay of kinetic energy, confirming that t
 
 \section{CFD-DEM Validation}
 
-\subsection{Test Case 4: Free sedimentation of a particle in a static water column}
+\subsection{Test Case 4: CFD-DEM Validation - Free Sedimentation of a settling cube}
+
+This test case validates the coupling between the CFD and DEM solvers by simulating the free sedimentation of a single cubic particle in a quiescent fluid. The particle, with a side length of $L = 2$ mm and density $\rho_s = 2000$ kg/m$^3$, is released from rest in a water column ($\rho_f = 1000$ kg/m$^3$, $\mu = 0.001$ Pa$\cdot$s).
+
+\subsection{Simulation Setup}
+The computational domain is a rectangular column of dimensions $0.02 \times 1.0 \times 0.02$ m. The mesh resolution is set to approximately $L/2$ (1.0 mm) to balance accuracy and computational cost. The particle is initially positioned at $(0.01, 0.95, 0.01)$ m. The simulation is run for 2.0 seconds with a time step of $1 \times 10^{-3}$ s.
+
+\subsection{Results}
+The particle accelerates downwards due to gravity, eventually reaching a terminal velocity where the drag force balances the net weight (gravity minus buoyancy). Figure \ref{fig:sedimentation_position} shows the vertical position of the particle over time, and Figure \ref{fig:sedimentation_velocity} shows the vertical velocity.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_position.png}
+    \caption{Vertical position of the settling cube over time.}
+    \label{fig:sedimentation_position}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_velocity.png}
+    \caption{Vertical velocity of the settling cube over time.}
+    \label{fig:sedimentation_velocity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_acceleration.png}
+    \caption{Vertical acceleration of the settling cube over time.}
+    \label{fig:sedimentation_acceleration}
+\end{figure}
+
+The results demonstrate that the solver correctly captures the physics of sedimentation, including the acceleration phase and the approach to terminal velocity. The Immersed Boundary Method (IBM) effectively couples the fluid and solid phases, producing the expected drag force without the need for explicit empirical drag correlations.
+
+\subsection{Test Case 5: Free sedimentation of a particle in a static water column}
 
 The release of sediment particles at rest at a height of 0.39m from the base of static water column is characterized by a sharp increase in velocity for the first 50 ms reaching a maximum velocity 100 ms.\par
 
