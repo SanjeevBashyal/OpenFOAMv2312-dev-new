@@ -4,7 +4,7 @@ This chapter outlines the systematic approach adopted for the research, detailin
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C04/methodology_chart.png}
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C03/methodology_chart.png}
 	\caption{Methodology Flowchart}
 	\label{fig:Methodology Flowchart}
 \end{figure}
@@ -19,26 +19,26 @@ The development environment was established using the Windows Subsystem for Linu
 \subsection{Study of FOAM Classes and Solvers}
 The OpenFOAM class hierarchy was studied in detail to understand the underlying architecture. Key classes analyzed included:
 \begin{itemize}
-    \item \textbf{fvMesh:} For handling computational grid and topology.
-    \item \textbf{volScalarField/volVectorField:} For managing field variables like pressure and velocity.
-    \item \textbf{pimpleFoam:} For understanding the PIMPLE algorithm for transient, incompressible flow, which served as base for the fluid solver.
+	\item \textbf{fvMesh:} For handling computational grid and topology.
+	\item \textbf{volScalarField/volVectorField:} For managing field variables like pressure and velocity.
+	\item \textbf{pimpleFoam:} For understanding the PIMPLE algorithm for transient, incompressible flow, which served as base for the fluid solver.
 \end{itemize}
 
 \subsection{DEM Implementation}
 The Discrete Element Method (DEM) was implemented as a standalone library within the `bashyal/Src/dem` directory. The approach focused on modularity and extensibility:
 \begin{itemize}
-    \item \textbf{Particle Class:} A custom `particle` class was created to store properties (mass, position, velocity) and handle motion integration using Newton's laws.
-    \item \textbf{Collision Detection:} The Gilbert-Johnson-Keerthi (GJK) algorithm was implemented for robust collision detection between arbitrary convex shapes (cubes).
-    \item \textbf{Contact Models:} The Walton-Braun hysteretic spring model was integrated to calculate normal forces, accounting for energy dissipation, along with a Coulomb friction model for tangential forces.
+	\item \textbf{Particle Class:} A custom `particle` class was created to store properties (mass, position, velocity) and handle motion integration using Newton's laws.
+	\item \textbf{Collision Detection:} The Gilbert-Johnson-Keerthi (GJK) algorithm was implemented for robust collision detection between arbitrary convex shapes (cubes).
+	\item \textbf{Contact Models:} The Walton-Braun hysteretic spring model was integrated to calculate normal forces, accounting for energy dissipation, along with a Coulomb friction model for tangential forces.
 \end{itemize}
 
 \subsection{CFD-DEM Coupling}
 The coupling between the fluid and solid phases was achieved by developing a new solver, `fineDEMfoam`. The coupling strategy involved:
 \begin{itemize}
-    \item \textbf{Solver Structure:} The solver integrates the standard `pimpleFoam` loop with the custom DEM library.
-    \item \textbf{Immersed Boundary Method (IBM):} A fictitious domain approach was used where particles are mapped onto the fluid grid using a solid volume fraction field ($\epsilon$).
-    \item \textbf{Force Calculation:} Fluid forces (buoyancy, drag) are calculated based on the pressure gradient and interpolated velocity fields, then applied to the particles.
-    \item \textbf{Volume of Fluid (VOF):} The VOF method was retained to capture the free surface, allowing for the simulation of three-phase flows (air-water-sediment).
+	\item \textbf{Solver Structure:} The solver integrates the standard `pimpleFoam` loop with the custom DEM library.
+	\item \textbf{Immersed Boundary Method (IBM):} A fictitious domain approach was used where particles are mapped onto the fluid grid using a solid volume fraction field ($\epsilon$).
+	\item \textbf{Force Calculation:} Fluid forces (buoyancy, drag) are calculated based on the pressure gradient and interpolated velocity fields, then applied to the particles.
+	\item \textbf{Volume of Fluid (VOF):} The VOF method was retained to capture the free surface, allowing for the simulation of three-phase flows (air-water-sediment).
 \end{itemize}
 
 \section{Solver Validation and Comparative Analysis}
@@ -55,22 +55,29 @@ This test validates the GJK collision detection, Time Integration, and specifica
 \textbf{Theory:}
 In a hysteretic model, energy is dissipated by the difference in stiffness during loading ($k_1$) and unloading ($k_2$). The effective Coefficient of Restitution ($e$) is derived analytically as:
 \begin{equation}
-e = \sqrt{\frac{k_1}{k_2}}
+	e = \sqrt{\frac{k_1}{k_2}}
 \end{equation}
 
-\textbf{Setup:}
+\textbf{Simulation Parameters:}
 \begin{itemize}
-    \item \textbf{Domain:} A simple flat floor (Infinite Mass fixed polygon).
-    \item \textbf{Particle:} A single Cube (side length $L=0.1\,m$, Mass $m=1.0\,kg$).
-    \item \textbf{Initial State:} Drop the cube from height $H_0 = 1.0\,m$ (measured from the bottom face) with 0 rotation.
-    \item \textbf{Parameters:}
-    \begin{itemize}
-        \item Loading Stiffness $k_1 = 10^5 \, N/m$.
-        \item Unloading Stiffness $k_2 = 4 \times 10^5 \, N/m$.
-        \item Friction $\mu = 0$ (to prevent rotational energy losses for this test).
-        \item Gravity $g = 9.81 \, m/s^2$.
-    \end{itemize}
+	\item \textbf{Geometry:} A single cube of side length $L=0.1\,m$ is dropped from a height $H_0=1.0\,m$ onto a fixed floor at $z=0$. The initial centroid position is $z = 1.05\,m$.
+	\item \textbf{Particle Properties:} Mass $m=1.0\,kg$.
+	\item \textbf{Contact Model:} Walton-Braun Hysteretic Spring.
+	\begin{itemize}
+		\item Loading Stiffness: $k_1 = 1 \times 10^5 \, N/m$.
+		\item Unloading Stiffness: $k_2 = 4 \times 10^5 \, N/m$.
+		\item Coefficient of Restitution: $e = \sqrt{k_1/k_2} = 0.5$.
+		\item Friction: $\mu = 0.0$.
+	\end{itemize}
+	\item \textbf{Controls:} Time step $dt = 1 \times 10^{-5}\,s$, End time $= 1.5\,s$, Gravity $g=9.81\,m/s^2$.
 \end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/setup_bounce.png}
+	\caption{Simulation setup for Test Case 1: Hysteretic Bounce showing the initial drop height of the cubic particle.}
+	\label{fig:setup_bounce}
+\end{figure}
 
 \subsubsection{Test Case 2: DEM Validation - Sliding Block on an Inclined Plane}
 This test validates the Tangential Force Model, Coulomb Friction Limit, and Gravity Projection.
@@ -78,17 +85,30 @@ This test validates the Tangential Force Model, Coulomb Friction Limit, and Grav
 \textbf{Theory:}
 For a block on an incline $\theta$:
 \begin{itemize}
-    \item Driving Force: $F_{down} = m g \sin(\theta)$
-    \item Resistive Force: $F_{fric} = \mu F_{normal} = \mu m g \cos(\theta)$
-    \item Net Acceleration: $a = g (\sin\theta - \mu \cos\theta)$
+	\item Driving Force: $F_{down} = m g \sin(\theta)$
+	\item Resistive Force: $F_{fric} = \mu F_{normal} = \mu m g \cos(\theta)$
+	\item Net Acceleration: $a = g (\sin\theta - \mu \cos\theta)$
 \end{itemize}
 
-\textbf{Setup:}
+\textbf{Simulation Parameters:}
 \begin{itemize}
-    \item \textbf{Domain:} Fixed rectangular floor tilted at $\theta = 30^\circ$.
-    \item \textbf{Particle:} Cube ($L=0.1\,m$, $m=1.0\,kg$).
-    \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.3$.
+	\item \textbf{Geometry:} A fixed rectangular floor tilted at $\theta = 30^\circ$. The particle is a cube with side length $L=0.1\,m$ and mass $m=1.0\,kg$.
+	\item \textbf{Contact Model:} Linear Spring-Dashpot with Friction.
+	\begin{itemize}
+		\item Normal Stiffness: $k_n = 1 \times 10^4 \, N/m$.
+		\item Tangential Stiffness: $k_t = 1 \times 10^4 \, N/m$.
+		\item Friction Coefficient: $\mu = 0.3$.
+		\item Damping: $\gamma_N = 200.0$.
+	\end{itemize}
+	\item \textbf{Controls:} Time step $dt = 1 \times 10^{-4}\,s$, End time $= 1.0\,s$.
 \end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C03/setup_sliding.png}
+	\caption{Simulation setup for Test Case 2: Sliding Block on a $30^\circ$ inclined plane.}
+	\label{fig:setup_sliding}
+\end{figure}
 
 \subsubsection{Test Case 3: DEM Validation - Random Loose Packing}
 This test validates multi-body contact stability, geometric exclusion, and energy dissipation in a dense granular system.
@@ -96,44 +116,66 @@ This test validates multi-body contact stability, geometric exclusion, and energ
 \textbf{Theory:}
 Random loose packing of frictional cubes is expected to yield a solid fraction $\phi \approx 0.50$. The system settles when kinetic energy dissipates via inelastic collisions and friction.
 
-\textbf{Setup:}
+\textbf{Simulation Parameters:}
 \begin{itemize}
-    \item \textbf{Domain:} $10L \times 10L$ container with infinite mass walls.
-    \item \textbf{Particles:} 200 Cubes ($L=0.05\,m$, $m=1.0\,kg$).
-    \item \textbf{Process:} Particles are poured into the container from a random position at the top.
-    \item \textbf{Parameters:} $g = 9.81 \, m/s^2$, $\mu = 0.5$, $e = 0.3$.
+	\item \textbf{Geometry:} A container with a $0.5\,m \times 0.5\,m$ base ($10L \times 10L$).
+	\item \textbf{Particles:} 200 Cubes with side length $L=0.05\,m$ and mass $m=1.0\,kg$ each.
+	\item \textbf{Contact Model:} Linear Spring-Dashpot with Friction.
+	\begin{itemize}
+		\item Stiffness: $k = 1 \times 10^5 \, N/m$.
+		\item Friction Coefficient: $\mu = 0.5$.
+		\item Damping: $\gamma_N = 50.0$.
+	\end{itemize}
+	\item \textbf{Controls:} Time step $dt = 1 \times 10^{-4}\,s$, End time $= 5.0\,s$.
 \end{itemize}
 
-\subsubsection{Test Case 4: CFD-DEM Validation - Free Sedimentation of a settling cube}
-This test case evaluates the performance of the newly developed CFD-DEM solver in simulating the free fall of a single settling cube in a quiescent fluid, with results compared against CFDEM Coupling and theoretical predictions. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C03/setup_packing.png}
+	\caption{Simulation setup for Test Case 3: Random Loose Packing of 200 cubic particles.}
+	\label{fig:setup_packing}
+\end{figure}
 
-The computational domain consists of a static water column of dimension \textbf{1 cm $\boldsymbol{\mathrm{\times}}$ 40 cm $\boldsymbol{\mathrm{\times}}$ 2 cm} (X $\mathrm{\times}$ Y $\mathrm{\times}$ Z) with mesh resolution of 0.005mm. A single particle with sizes (1.5 mm, 2 mm, and 2.5 mm) represented by cube geometry with density 2000 is introduced near the top of the column at \textbf{39 cm} along the Y-axis and allowed to fall under the influence of gravity. Simulations are performed using the newly developed "fineDEMfoam" solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. For comparison, parallel simulations are conducted using CFDEM Coupling, where the fluid phase is solved using OpenFOAM's pimpleFoam solver and particle dynamics are handled by LIGGGHTS through the CFDEM coupling interface. The mesh resolution is chosen consistently across all solvers to ensure adequate resolution of the fluid flow around the particle, with refinement in the vicinity of the particle to capture boundary layer effects accurately. Key parameters such as particle trajectory, velocity evolution, and terminal settling velocity are extracted from all simulations for comparative analysis.
+\subsubsection{Test Case 4: CFD-DEM Validation - Free Sedimentation of a settling cube}
+This test case evaluates the performance of the solver in simulating the free fall of a single settling cube in a quiescent fluid. The particle motion is governed by the balance between gravitational, buoyancy, and hydrodynamic drag forces.
 
 \textbf{Theory:}
 A particle falling in a fluid accelerates until Drag + Buoyancy equals Gravity.
 \begin{equation}
-F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v_t^2 C_d A \right)
+	F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v_t^2 C_d A \right)
 \end{equation}
 
-\textbf{Setup:}
-
+\textbf{Domain and Mesh:}
 \begin{itemize}
-    \item \textbf{Domain:} A vertical column of water ($W > 10L$). Grid resolution $\approx L/4$.
-    \item \textbf{Fluid:} Water ($\rho_f = 1000 \, kg/m^3$, $\mu = 0.001 \, Pa\cdot s$).
-    \item \textbf{Particle:} A Cube ($L = 0.02 \, m$, $\rho_s = 2000 \, kg/m^3$, $m = 0.016 \, kg$).
-    \item \textbf{Initial State:} Released from rest, fully submerged.
+	\item \textbf{Dimensions:} A vertical water column of $0.02\,m \times 1.0\,m \times 0.02\,m$.
+	\item \textbf{Mesh Resolution:} $40 \times 2000 \times 40$ cells, ensuring high vertical resolution to capture the settling wake.
 \end{itemize}
 
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/single_particle_case.png}
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/single_particle_case.png}
 	\caption{Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
 	\label{fig:Geometry for simulating free sedimentation of a single settling cube with dimensions in cm}
 \end{figure}
 
-\begin{figure}[ht]
+\textbf{Particle Properties:}
+\begin{itemize}
+	\item \textbf{Geometry:} Cube ($L = 2\,mm$ implied from STL).
+	\item \textbf{Initial Position:} $(0.01, 0.9, 0.01)\,m$.
+	\item \textbf{Material:} Density $\rho_s = 2000\,kg/m^3$, Young's Modulus $Y=1 \times 10^7\,Pa$, Poisson Ratio $\nu=0.3$.
+	\item \textbf{Interaction:} Friction $\mu=0.5$, Restitution $\epsilon=0.8$.
+\end{itemize}
+
+\textbf{Simulation Controls:}
+\begin{itemize}
+	\item Fluid Time Step: $\Delta t = 5 \times 10^{-4}\,s$.
+	\item DEM Sub-cycling: Matched to fluid step ($5 \times 10^{-4}\,s$).
+	\item End Time: $4.0\,s$.
+\end{itemize}
+
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/test_case_mesh.png}
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/test_case_mesh.png}
 	\caption{Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
 	\label{fig:Immersed Boundary Mesh representing sediment particle of size 2 mm positioned near the top of water column}
 \end{figure}
@@ -144,33 +186,80 @@ This test validates the VOF-IBM Coupling and Free-Surface Intersection.
 \textbf{Theory:}
 Archimedes' principle for a floating object:
 \begin{equation}
-\rho_s L^3 g = \rho_f (L^2 h_{sub}) g
+	\rho_s L^3 g = \rho_f (L^2 h_{sub}) g
 \end{equation}
 
-\textbf{Setup:}
+\textbf{Domain and Mesh:}
 \begin{itemize}
-    \item \textbf{Domain:} Tank of water with free surface at $Y_{water} = 0.5\,m$.
-    \item \textbf{Particle:} Cube ($L=0.1\,m$).
-    \item \textbf{Parameters:} $\rho_f = 1000 \, kg/m^3$, $\rho_s = 500 \, kg/m^3$.
-    \item \textbf{Initial State:} Drop from slightly above water.
+	\item \textbf{Dimensions:} $0.3\,m \times 1.0\,m \times 0.3\,m$.
+	\item \textbf{Mesh Resolution:} $30 \times 100 \times 30$ cells.
 \end{itemize}
 
+\textbf{Simulation Parameters:}
+\begin{itemize}
+	\item \textbf{Particle:} Cube ($L=0.1\,m$) initialized at $(0.15, 0.6, 0.15)\,m$.
+	\item \textbf{Material:} Density $\rho_s = 500\,kg/m^3$ (to ensure floating), with other mechanical properties identical to Test Case 4.
+	\item \textbf{Controls:} Time Step $\Delta t = 1 \times 10^{-4}\,s$, End Time $= 4.0\,s$.
+\end{itemize}
+
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/setup_floating.png}
+%	\caption{Setup for Test Case 5: A cube interacting with the air-water free surface.}
+%	\label{fig:setup_floating}
+%\end{figure}
+
 \section{Primary Application Study Case}
-The primary study case for this research involves the simulation of free surface flow in a sloped rectangular channel. The domain features a rigid bed and a mobile bed composed of sand particles. This setup aims to investigate sediment transport mechanisms, bedform evolution, and the interaction between the turbulent free-surface flow and the granular bed. The simulation utilizes the full capabilities of the developed `fineDEMfoam` solver, utilizing the VOF method for the free surface and the coupled DEM for the mobile sediment phase.
+The primary study case involves the simulation of turbulent free-surface flow over a mobile sediment bed in a rectangular channel. This case evaluates the solver's capability to simulate realistic transport regimes (bedload and suspension) under varying flow conditions using different RANS turbulence closures.
 \par
 
-\subsubsection{Test Case A: Particle-Laden Flow in a Horizontal Channel}
+\subsubsection{Test Case A: Particle-Laden Flow in a Rectangular Channel}
 
-To evaluate the performance of the newly developed CFD-DEM solver in handling complex particle-fluid interactions, a test case involving multiple particles in a horizontal channel flow is simulated. This configuration tests the solver's capability to handle particle-particle collisions, particle-wall interactions, and the coupling between fluid flow and particle motion. 
+To evaluate the performance of the newly developed CFD-DEM solver in handling complex particle-fluid interactions, a test case involving multiple particles in a rectangular channel flow is simulated. This configuration tests the solver's capability to handle particle-particle collisions, particle-wall interactions, and the coupling between fluid flow and particle motion. 
 
-The computational domain consists of a horizontal channel with specified length, width, and height. A uniform inlet velocity profile is applied, creating a fully developed turbulent flow. Polyhedron particles representing sand are introduced at the inlet, and their transport, settling, and interaction with the channel bed are monitored throughout the simulation. Simulations are performed using the newly developed solver, where the fluid phase is solved using the adapted pimpleFoam solver and particle dynamics are handled by the implemented DEM solver. Boundary conditions include no-slip walls at the bottom and sides, a symmetry or free-slip condition at the top, and appropriate inlet-outlet conditions for the fluid phase. Particle properties, including size distribution, density, and shape parameters, are initialized identically across all simulations to match experimental or theoretical configurations. The simulation tracks particle trajectories, velocities, and fluid flow fields to compare with the theoretical near bed region physics involving bed shear stress and particle motion.
+\subsubsection{Simulation Regimes}
+Two distinct flow regimes were simulated to observe different transport mechanisms:
 
-\begin{figure}[ht]
+\begin{table}[ht]
 	\centering
-	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C04/sediment_bed_sim.png}
-	\caption{Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
-	\label{fig:Geometry for simulating particle-laden flow in a horizontal channel with dimensions in cm}
-\end{figure}
+	\caption{Flow regimes and inlet conditions for Study Case A}
+	\label{tab:case_a_regimes}
+	\begin{tabular}{|l|c|c|l|}
+		\hline
+		\textbf{Case Name} & \textbf{Slope} & \textbf{Inlet Velocity ($U_{inlet}$)} & \textbf{Flow Regime} \\ \hline
+		Sub-Critical & 0.01 & 1.0 m/s & Bedload dominance \\ \hline
+		Super-Critical & 0.02 & 1.5 m/s & Suspension/Saltation \\ \hline
+	\end{tabular}
+\end{table}
+
+\subsubsection{Domain and Particles}
+The computational domain and granular bed properties were consistent across all simulations:
+\begin{itemize}
+	\item \textbf{Domain Dimensions:} Length $L=2.0\,m$, Width $W=0.1\,m$, Height $H=0.4\,m$.
+	\item \textbf{Grid Resolution:} $400 \times 20 \times 80$ cells ($dx=dy=0.005\,m$).
+	\item \textbf{Initial Water Depth:} $h_{water} = 0.2\,m$.
+	\item \textbf{Sediment Bed:} A randomly packed bed of approximately 60 particles (size $2\,cm$, density $2500\,kg/m^3$) initialized between $x=0.5\,m$ and $x=1.5\,m$.
+\end{itemize}
+
+\subsubsection{Boundary Conditions}
+\begin{itemize}
+	\item \textbf{Inlet ($x=0$):} 
+	\begin{itemize}
+		\item Phase fraction $\alpha=1$ (water) for $y \le h_{inlet}$.
+		\item Velocity fixed at $U_{inlet}$ for the water phase.
+		\item Turbulent kinetic energy $k_{inlet} = 1.5 (I \cdot U_{inlet})^2$ with intensity $I=0.05$.
+		\item Dissipation ($\epsilon$ or $\omega$) derived from a mixing length $L_{scale} = 0.07 h_{inlet}$.
+	\end{itemize}
+	\item \textbf{Outlet ($x=L$):} Zero gradient for velocity and phase; fixed hydrostatic pressure profile.
+	\item \textbf{Walls:} The bottom boundary ($y=0$) is a no-slip wall with standard wall functions. The top boundary ($y=H$) is treated as a free slip (atmosphere) condition.
+\end{itemize}
+
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C03/sediment_bed_sim.png}
+%	\caption{Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
+%	\label{fig:Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
+%\end{figure}
 
 
 

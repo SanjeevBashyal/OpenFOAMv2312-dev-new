@@ -1,23 +1,51 @@
-\chapter{CONCLUSION}
+\chapter{ CONCLUSIONS AND OUTLOOK}
 \label{chapter6}
-\section{Summary and Conclusion}
 
-The first objective mentioned in section 1.4 is achieved by conducting comparative analysis of $k-\epsilon $ and $k-\omega $ turbulence models on SedFOAM solver and the second and third objective are being achieved by developing a model integrating a one-way coupling mechanism between the existing OpenFOAM pimple solver and the DEM solver on body-fit-immersed boundary geometry representing a particle. It demonstrates the practicality of the OpenFOAM-based CFD-DEM framework, which integrates the OpenFOAM${^{\circledR}}$ CFD toolbox OpenFOAM-v2312 with the custom DEM code implemented in OpenFOAM. The conclusions are summarized in the following points:\par
+\section{Summary of Research}
+
+This research presented the development, implementation, and validation of \textbf{fineDEMfoam}, a coupled CFD-DEM solver within the OpenFOAM framework designed to simulate sediment transport in turbulent flows. The solver couples the Finite Volume Method (FVM) for the fluid phase, governed by the Reynolds-Averaged Navier-Stokes (RANS) equations, with the Discrete Element Method (DEM) for the solid phase. A key feature of the implementation is the utilization of a Immersed Boundary Method (IBM) to resolve fluid forces on polygonal particles, alongside the Gilbert-Johnson-Keerthi (GJK) algorithm for collision detection. The research systematically progressed from fundamental verification of contact mechanics to complex coupled simulations involving sediment particles in open channel systems.
+
+\section{Fulfillment of Objectives}
+
+The extent to which the specific research objectives outlined in Chapter 1 were achieved is detailed below:
+
+\begin{itemize}
+	\item \textbf{Objective 1: To develop a model combining 3D turbulence modeling with DEM in an immersed boundary mesh.}
+	\par This objective was achieved through the implementation of the `fineDEMfoam` solver. The solver integrates the PIMPLE algorithm for incompressible transient flow with a custom DEM library. The implementation of the `backgroundMesh` class and the IBM forcing term ($\mathbf{f}_{ib}$) allows for the dynamic representation of solid volume fractions and velocity fields on the Eulerian grid, capturing the presence of non-spherical particles (cubes) within the turbulent flow domain.
+	
+	\item \textbf{Objective 2: To implement the model in OpenFOAM and assess predictive capabilities against established models and experiments.}
+	\par The solver was validated through a series of fundamental test cases. The mechanical accuracy of the DEM module was confirmed via the hysteretic bounce test and the sliding block test. The CFD-DEM coupling was validated against the experimental correlations of \textcite{dietrich_settling_1982} for free sedimentation, showing close agreement in terminal velocity predictions. Furthermore, the floating cube test case demonstrated the solver's ability to handle three-phase interactions (Air-Water-Sediment) by successfully coupling IBM with the Volume of Fluid (VOF) method.
+	
+	\item \textbf{Objective 3: To identify the most suitable RANS turbulence closure scheme for sediment transport.}
+	\par A comparative study of $k-\epsilon$, Standard $k-\omega$, and $k-\omega$ SST models was conducted. The study revealed that while turbulence closure has negligible impact on single-particle settling in quiescent fluids, it is the governing factor in shear-driven sediment transport. The research identified that the $k-\epsilon$ model tends to over-predict sediment flux due to excessive turbulence production at stagnation points, while the Standard $k-\omega$ model is overly dissipative. The $k-\omega$ SST model was identified as the most suitable closure, offering a physically realistic balance by accurately capturing wake turbulence and bed-shielding effects without predicting premature erosion.
+\end{itemize}
+
+\section{Key Conclusions}
+
+Based on the results and discussion, the following conclusions are drawn:
 
 \begin{enumerate}
-	\item  Among two equation RANS turbulence model, $k-\omega $ turbulence model better represents sediment flow dynamics near bed region in two phase Eulerian Eulerian solution approach.\par
-	\item  The CFD-DEM solver employs a body-fitted immersed boundary method to precisely model cubical sediment particles in OpenFOAM, surpassing the constraints of traditional spherical assumptions.\par
-	\item  The simulation of settling velocities for cubical particles aligns closely with the experimental data, verifying the solver's applicability to the free sedimentation problem with one-way coupling.\par
+	\item \textbf{Robustness of Contact Physics:} The implementation of the Walton-Braun hysteretic spring model and GJK detection allows the solver to maintain stable, energy-conserving piles of non-spherical particles with a realistic solid fraction and coordination number.
+	\item \textbf{Accuracy of Drag Resolution:} The Immersed Boundary Method implemented avoids the need for empirical drag correlations for specific shapes. The solver naturally resolves pressure and viscous stresses over the particle surface, evidenced by the accurate reproduction of terminal settling velocities and the damped oscillation of floating bodies.
+	\item \textbf{Turbulence Modeling Recommendations:} For CFD-DEM applications involving open channel flow, the $k-\omega$ SST model is recommended.
 \end{enumerate}
 
-The solver is presently limited to single particle cases and needs further development of two-way coupling and multi-particle interactions to simulate complex sediment transport like bedload movement.\par
+\section{Limitations}
 
-\section{Recommendations for Further Work}
+While the developed solver represents a significant advancement, several limitations remain:
 
-The CFD-DEM solver implemented in OpenFOAM in the project is at its initial stage and lots of implementations are to be made to develop a robust and competitive tool for CFD-DEM analysis in the academic and professional sector. The further implementations required in the solver are:\par
+\begin{itemize}
+	\item \textbf{RANS Averaging:} The use of RANS models filters out instantaneous turbulent fluctuations which are known to contribute to the incipient motion of sediment particles.
+	\item \textbf{Mesh Resolution Dependence:} The accuracy of the IBM is dependent on the ratio of the fluid cell size to the particle diameter. High-resolution grids are required for accurate drag calculation which significantly increase computational cost.
+	\item \textbf{Particle Shape Simplification:} Although the solver handles cubes and convex polyhedra, the current validation was primarily focused on cubic geometries. The behavior of highly irregular, concave natural sediment grains remains to be fully characterized.
+\end{itemize}
 
-\begin{enumerate}
-	\item  Particle-Particle Interaction in DEM solver\par
-	\item  Particle interactions as source terms in the fluid solver in the momentum equation\par
-	\item  Two-way and four-way CFD-DEM coupling mechanism\par
-\end{enumerate}
+\section{Recommendations for Future Work}
+
+To further enhance the capabilities and accuracy of the `fineDEMfoam` solver, the following future work is recommended:
+
+\begin{itemize}
+	\item \textbf{Integration with LES:} Replacing the RANS turbulence framework with Large Eddy Simulation (LES) would allow the solver to capture instantaneous turbulent structures and their direct impact on particle entrainment.
+	\item \textbf{Concave and Natural Geometries:} Future studies should incorporate geometries of river aggregates (involving curved surfaces and concave shapes) to evaluate the impact of natural shape variations on packing density and hydraulic resistance.
+	\item \textbf{Parallelization:} To enable reach-scale simulations, the particle-mesh interaction algorithms should be further optimized for massive parallelization either with MPI or with GPUs to handle thousands of particles efficiently.
+\end{itemize}

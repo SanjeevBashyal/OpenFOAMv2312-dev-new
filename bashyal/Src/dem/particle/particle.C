@@ -92,6 +92,54 @@ namespace Bashyal
         invMomentOfInertia_ = inv(momentOfInertia_);
     }
 
+    particle::particle(
+        const Foam::fileName& stlFile,
+        const Foam::scalar mass,
+        const Foam::tensor& moi,
+        const Foam::point& initialPosition
+    )
+    :   boundary(stlFile), // Use boundary's STL constructor
+        mass_(mass),
+        momentOfInertia_(moi),
+        invMomentOfInertia_(inv(moi)),
+        position_(initialPosition),
+        orientation_(Foam::quaternion::I), // Start with no rotation
+        velocity_(Foam::vector::zero),
+        angularVelocity_(Foam::vector::zero),
+        velocityOld_(Foam::vector::zero),
+        angularVelocityOld_(Foam::vector::zero),
+        axis_(Foam::vector(0, 0, 1)),
+        axisOld_(Foam::vector(0, 0, 1)),
+        omega_(0.0),
+        omegaOld_(0.0),
+        force_(Foam::vector::zero),
+        torque_(Foam::vector::zero),
+        FCoupling_(),
+        FContact_(),
+        acceleration_(Foam::vector::zero),
+        angularAcceleration_(Foam::vector::zero),
+        totRotMatrix_(Foam::tensor::I),
+        bodyOperation_(5), // Default: fully coupled
+        updateTorque_(true),
+        CoNum_(0.0),
+        meanCoNum_(0.0),
+        dC_(1.0), // Should be calculated from boundary
+        isActive_(true),
+        id_(particleCount_++)
+    {
+        // Calculate dC from bounding box
+        Foam::boundBox bb = this->createBoundBox();
+        dC_ = bb.mag();
+
+        if (mass_ <= 0)
+        {
+            FatalErrorInFunction
+                << "Particle mass must be positive."
+                << abort(Foam::FatalError);
+        }
+        invMomentOfInertia_ = inv(momentOfInertia_);
+    }
+
 
     // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 

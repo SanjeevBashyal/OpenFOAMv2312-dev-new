@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      g;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -2 0 0 0 0];
+
+// Slope 1:10 -> theta = atan(0.1) = 5.71 degrees
+// g = (g * sin(theta), -g * cos(theta), 0)
+// g = 9.81
+// sin(theta) = 0.0995
+// cos(theta) = 0.995
+// gx = 9.81 * 0.0995 = 0.976
+// gy = -9.81 * 0.995 = -9.761
+
+value           (0 -9.81 0);
+
+// ************************************************************************* //

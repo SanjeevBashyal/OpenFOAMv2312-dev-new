@@ -27,6 +27,7 @@ namespace Bashyal
         // Constructors
         boundary();
         boundary(const Foam::pointField &points, const Foam::faceList &faces);
+        boundary(const Foam::fileName &stlFile);
 
         // Destructor
         ~boundary();

@@ -59,6 +59,10 @@ Description
 #include "particle.H"
 #include "particlesGenerator.H"
 #include "timeRegistry.H"
+#include "gjkContact.H"
+#include "contactForce.H"
+#include "wall.H"
+#include "Random.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -96,25 +100,152 @@ int main(int argc, char *argv[])
 
     // DEM Initialization
     Info<< "Initializing DEM..." << endl;
-    Bashyal::particlesGenerator pGen;
-    // Create 1 particle for testing
-    Foam::PtrList<Bashyal::particle> particles = pGen.createCubical(1, 0.05, 0.05);
     
-    if (particles.size() > 0)
+    // --- Pre-Run Settling Phase ---
+    Info << "\n========================================\n"
+         << "Pre-Run Settling Phase (DEM Only)\n"
+         << "========================================\n" << endl;
+
+    // 1. Setup DEM Objects
+    Bashyal::gjkContact contactDetector;
+    scalar k_dem = 1e5;
+    scalar mu_dem = 0.5;
+    scalar gammaN_dem = 50.0;
+    scalar crustWidth = 1e-4;
+    Bashyal::contactForce forceComputer = Bashyal::contactForce(k_dem, k_dem, k_dem, gammaN_dem, 0.0, mu_dem);
+    
+    // Walls
+    Bashyal::wall floor(point(0,0,0), vector(0,0,1), "floor");
+    // Side walls (optional, but good for containment)
+    // For this channel flow, maybe just floor is enough if we rely on cyclic/slip for sides?
+    // But user asked for "loosely packed 50 particles", they need a container to stack.
+    // Let's add side walls for the settling phase, then maybe remove them or ignore them for CFD?
+    // Actually, for the CFD part, the mesh has boundaries. For DEM, we need explicit walls if particles hit them.
+    // Let's add a floor and maybe periodic boundaries or walls matching the domain.
+    // Domain is 0 to 2.0 in X, -0.1 to 0.1 in Y (width), 0 to 0.3 in Z (height).
+    // Wait, previous code used Z as vertical? No, OpenFOAM usually Y is vertical.
+    // Let's check gravity. constant/g had (0 -9.81 0) usually.
+    // In `incipientMotion`, we set gravity.
+    // Let's assume Y is vertical (gravity direction).
+    // Domain: X (0 to 2), Y (0 to 0.3), Z (0 to 0.2).
+    // Floor at Y=0.
+    
+    Bashyal::wall wallFloor(point(0,0,0), vector(0,1,0), "floor");
+    
+    // 2. Particles
+    Foam::PtrList<Bashyal::particle> particles;
+    particles.setSize(51); // 1 Wall + 50 Dynamic
+    
+    // Wall Particle (Index 0) - Kept for visualization/consistency with previous plan
+    particles.set(0, new Bashyal::particle());
+    particles[0].setPosition(point(1.0, -0.05, 0.1)); // Below floor
+    particles[0].setDC(0.1);
+    particles[0].setMass(1000.0);
+    particles[0].setBodyOperation(0); // Static
+    
+    // 3. Settling Loop
+    scalar demDt = 1e-4;
+    scalar demTime = 0.0;
+    scalar settleTime = 2.0; // Max time
+    scalar lastEmitTime = -0.01;
+    scalar emitInterval = 0.02;
+    int pCount = 1;
+    int maxParticles = 50;
+    
+    scalar D = 0.02;
+    scalar rho_s = 2500.0;
+    scalar mass = rho_s * pow3(D);
+    
+    Foam::Random rnd(1234);
+    
+    Info << "Pouring 50 particles..." << endl;
+    
+    while (demTime < settleTime)
     {
-        // Test Case 5: Floating Cube
-        // Domain: 0.3 x 1.0 x 0.3
-        // Particle: 0.1m Cube
-        // Density: 500 kg/m3
-        // Mass = 500 * 0.1^3 = 0.5 kg
-        // Position: (0.15, 0.62, 0.15) (Bottom at 0.57, Water at 0.5)
-        particles[0].setPosition(point(0.15, 0.62, 0.15));
-        particles[0].setDC(0.1); 
-        particles[0].setMass(0.5);
+        // Emission
+        if (pCount <= maxParticles && (demTime - lastEmitTime) >= emitInterval)
+        {
+            scalar x = 1.0 + (rnd.sample01<scalar>() - 0.5) * 0.2; // Center X=1.0, width 0.2
+            scalar z = 0.1 + (rnd.sample01<scalar>() - 0.5) * 0.15; // Center Z=0.1, width 0.15
+            scalar y = 0.2; // Drop from height
+            
+            point pos(x, y, z);
+            
+            // Check overlap
+            bool overlap = false;
+            for (int i=1; i<pCount; ++i)
+            {
+                if (mag(particles[i].position() - pos) < D) overlap = true;
+            }
+            
+            if (!overlap)
+            {
+                particles.set(pCount, new Bashyal::particle());
+                particles[pCount].setPosition(pos);
+                particles[pCount].setDC(D);
+                particles[pCount].setMass(mass);
+                particles[pCount].setBodyOperation(5); // Free motion
+                
+                // Random orientation? (Optional, particle class handles it?)
+                
+                pCount++;
+                lastEmitTime = demTime;
+                // Info << "Emitted " << pCount-1 << endl;
+            }
+        }
+        
+        // Forces
+        for (int i=1; i<pCount; ++i) particles[i].clearForceAndTorque();
+        
+        // Gravity
+        vector gVec(0, -9.81, 0);
+        for (int i=1; i<pCount; ++i) particles[i].applyForce(mass * gVec, particles[i].position());
+        
+        // Contacts
+        for (int i=1; i<pCount; ++i)
+        {
+            // Floor
+            Bashyal::ContactInfo c = contactDetector.detectContactParticleWall(particles[i], wallFloor, crustWidth);
+            if (c.isContact) forceComputer.computeForceParticleWall(particles[i], wallFloor, c, demDt);
+            
+            // Particle-Particle
+            for (int j=i+1; j<pCount; ++j)
+            {
+                 Bashyal::ContactInfo cp = contactDetector.detectContact(particles[i], particles[j], crustWidth, crustWidth);
+                 if (cp.isContact) forceComputer.computeForce(particles[i], particles[j], cp, demDt);
+            }
+        }
+        
+        // Update
+        scalar totalKE = 0.0;
+        for (int i=1; i<pCount; ++i)
+        {
+            particles[i].update(demDt);
+            totalKE += 0.5 * mass * magSqr(particles[i].velocity());
+        }
+        
+        demTime += demDt;
+        
+        // Exit condition
+        if (pCount > maxParticles && totalKE < 1e-4)
+        {
+            Info << "Settled at t=" << demTime << " KE=" << totalKE << endl;
+            break;
+        }
+        
+        if (int(demTime/demDt) % 1000 == 0)
+        {
+             Info << "DEM Time: " << demTime << " Particles: " << pCount-1 << " KE: " << totalKE << endl;
+        }
     }
+    
+    // Resize to actual count if not full (unlikely)
+    particles.setSize(pCount);
+    
+    Info << "Settling complete. Starting CFD..." << endl;
 
     std::ofstream dataFile("sedimentation_data.csv");
-    dataFile << "Time,Y,Vy" << std::endl;
+    dataFile << "Time,X,Y,Z,Vx,Vy,Vz" << std::endl;
 
     // Initialize Time Registry
     // Note: runTime.endTime().value() might be large, but we can update it
@@ -229,8 +360,13 @@ int main(int argc, char *argv[])
         if (particles.size() > 0)
         {
              dataFile << runTime.timeName() << "," 
+                      << particles[0].position().x() << "," 
                       << particles[0].position().y() << "," 
-                      << particles[0].velocity().y() << std::endl;
+                      << particles[0].position().z() << ","
+                      << particles[0].velocity().x() << "," 
+                      << particles[0].velocity().y() << "," 
+                      << particles[0].velocity().z() 
+                      << std::endl;
         }
 
         runTime.printExecutionTime(Info);

@@ -19,6 +19,13 @@ namespace Bashyal
         // Additional boundary-specific initialization can be added here if needed
     }
 
+    boundary::boundary(const Foam::fileName &stlFile)
+        : geomObject(stlFile),
+          nef_(),
+          patchTypes_()
+    {
+    }
+
     // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
     boundary::~boundary()

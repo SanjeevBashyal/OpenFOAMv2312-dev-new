@@ -32,7 +32,7 @@ The spatial model is constructed using the backgroundMesh object, which generate
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/background_mesh.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C04/background_mesh.png}
 	\caption{A typical backgroundMesh having $10\times 10\times 10$ regular hexahedral backgroundBlocks representing computational mesh}
 	\label{fig:A typical backgroundMesh}
 \end{figure}
@@ -58,7 +58,7 @@ These aggregates are then intersected with the background mesh using the interse
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.4\textwidth]{Figures/Chapters/C05/single_cube_sediment.png}
+	\includegraphics[width=0.4\textwidth]{Figures/Chapters/C04/single_cube_sediment.png}
 	\caption{Modelling of sediment using a cube geometry}
 	\label{fig:Modelling of sediment using a cube geometry}
 \end{figure}
@@ -69,7 +69,7 @@ Geometry intersection ensures integration of sediment geometry into the computat
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/immersed_boundary.png}
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/immersed_boundary.png}
 	\caption{Development of immersed boundary of a particle}
 	\label{fig:Development of immersed boundary of particle}
 \end{figure}
@@ -84,7 +84,7 @@ Geometry intersection ensures integration of sediment geometry into the computat
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/cube_intersection.png}
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C04/cube_intersection.png}
 	\caption{Intersection of a cube geometry with background mesh}
 	\label{fig:Intersection of a cube geometry with background mesh}
 \end{figure}
@@ -93,7 +93,7 @@ The intersectClosedSurface function handles the process of intersecting a cube a
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/multiple_intersections.png}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C04/multiple_intersections.png}
 	\caption{Introduction of multiple immersed boundaries in computational domain representing multiple particles}
 	\label{fig:Introduction of multiple immersed boundaries in computational domain representing multiple particles}
 \end{figure}
@@ -205,9 +205,9 @@ The GJK algorithm determines if two convex shapes overlap by checking if the ori
 
 \textbf{Implementation Details:}
 \begin{itemize}
-    \item \textbf{Support Function:} A key component is the support function $S_A(\mathbf{d})$, which returns the point on shape $A$ furthest in direction $\mathbf{d}$. For a cube, this is one of its vertices.
-    \item \textbf{Simplex Evolution:} The algorithm iteratively builds a simplex (line, triangle, tetrahedron) inside the Minkowski difference to enclose the origin.
-    \item \textbf{EPA (Expanding Polytope Algorithm):} If a collision is detected, the EPA is used to determine the penetration depth and contact normal by expanding the simplex to find the closest point on the boundary of the Minkowski difference to the origin.
+	\item \textbf{Support Function:} A key component is the support function $S_A(\mathbf{d})$, which returns the point on shape $A$ furthest in direction $\mathbf{d}$. For a cube, this is one of its vertices.
+	\item \textbf{Simplex Evolution:} The algorithm iteratively builds a simplex (line, triangle, tetrahedron) inside the Minkowski difference to enclose the origin.
+	\item \textbf{EPA (Expanding Polytope Algorithm):} If a collision is detected, the EPA is used to determine the penetration depth and contact normal by expanding the simplex to find the closest point on the boundary of the Minkowski difference to the origin.
 \end{itemize}
 
 \subsection{Contact Force Model}
@@ -216,8 +216,8 @@ Once a collision is detected, the interaction forces are calculated using the Wa
 \textbf{Normal Force:}
 \begin{equation}
 	F_n = \begin{cases} 
-	k_1 \delta & \text{Loading } (\dot{\delta} \ge 0) \\
-	k_2 (\delta - \delta_0) & \text{Unloading } (\dot{\delta} < 0)
+		k_1 \delta & \text{Loading } (\dot{\delta} \ge 0) \\
+		k_2 (\delta - \delta_0) & \text{Unloading } (\dot{\delta} < 0)
 	\end{cases}
 \end{equation}
 where $k_1$ and $k_2$ are loading and unloading stiffnesses, and $\delta_0$ is the residual overlap. This hysteresis accounts for energy dissipation (plasticity).
@@ -235,26 +235,26 @@ The coupling between the fluid solver (`fineDEMfoam`) and the DEM library is ach
 \subsection{Solver Structure: fineDEMfoam}
 The `fineDEMfoam` solver integrates the DEM loop into the standard PIMPLE algorithm. The high-level algorithm is:
 \begin{enumerate}
-    \item Initialize DEM particles (`particlesGenerator`).
-    \item \textbf{Time Loop:}
-    \begin{enumerate}
-        \item Calculate Immersed Boundary (IBM) fields ($\epsilon, \mathbf{U}_{solid}$).
-        \item \textbf{PIMPLE Loop (Fluid Solver):}
-        \begin{enumerate}
-            \item Solve VOF equation ($\alpha$).
-            \item Solve Momentum predictor ($\mathbf{U}$).
-            \item Solve Pressure corrector ($p$).
-            \item \textbf{Coupling Step:} Calculate fluid forces on particles.
-        \end{enumerate}
-        \item \textbf{DEM Loop:}
-        \begin{enumerate}
-            \item Detect collisions (Space Registry + GJK).
-            \item Calculate contact forces.
-            \item Apply fluid and contact forces.
-            \item Update particle positions and velocities.
-        \end{enumerate}
-        \item Write output (Fluid fields + Particle VTPs).
-    \end{enumerate}
+	\item Initialize DEM particles (`particlesGenerator`).
+	\item \textbf{Time Loop:}
+	\begin{enumerate}
+		\item Calculate Immersed Boundary (IBM) fields ($\epsilon, \mathbf{U}_{solid}$).
+		\item \textbf{PIMPLE Loop (Fluid Solver):}
+		\begin{enumerate}
+			\item Solve VOF equation ($\alpha$).
+			\item Solve Momentum predictor ($\mathbf{U}$).
+			\item Solve Pressure corrector ($p$).
+			\item \textbf{Coupling Step:} Calculate fluid forces on particles.
+		\end{enumerate}
+		\item \textbf{DEM Loop:}
+		\begin{enumerate}
+			\item Detect collisions (Space Registry + GJK).
+			\item Calculate contact forces.
+			\item Apply fluid and contact forces.
+			\item Update particle positions and velocities.
+		\end{enumerate}
+		\item Write output (Fluid fields + Particle VTPs).
+	\end{enumerate}
 \end{enumerate}
 
 \subsection{Immersed Boundary Method (IBM)}

@@ -1,157 +1,199 @@
 % chapter Discussion, limitation, future work, and recommendation
-\chapter{ RESULTS }
+\chapter{ RESULTS AND DISCUSSION }
 \label{chapter5}
 
 
 
 \section{DEM Validation}
 
-This section presents the results of the fundamental DEM validation test cases, verifying the correct implementation of contact physics, time integration, and force models.
+This section presents the results of the fundamental DEM validation test cases, verifying the correct implementation of contact physics, time integration, and force models in the OpenFOAM environment.
 
 \subsection{Test Case 1: Hysteretic Bounce}
-The hysteretic bounce test validates the energy dissipation mechanism in the normal contact model. A 1 kg cube was dropped from 1 m height onto a rigid floor.
+The hysteretic bounce test serves as a primary validation for the energy dissipation mechanism within the normal contact model. A 1 kg cube was dropped from a height of 1 m onto a rigid floor, governed by the Walton-Braun hysteretic spring model with a loading stiffness $k_1 = 10^5 \, N/m$ and an unloading stiffness $k_2 = 4 \times 10^5 \, N/m$.
 
-Figure \ref{fig:bounce_height} shows the particle height over time. The peak height decreases with each bounce, indicating energy dissipation. Figure \ref{fig:bounce_velocity} illustrates the velocity evolution. The velocity magnitude decreases after each impact, consistent with the specified coefficient of restitution.
-
+Figure \ref{fig:bounce_height} depicts the time evolution of the particle's vertical position. The trajectory follows a parabolic path characteristic of free fall under gravitational acceleration. Upon impact at $t \approx 0.45 \, s$, the particle rebounds to a lower peak height, confirming that energy is successfully dissipated during the contact event. This decay continues monotonically until the particle settles at rest after $t \approx 1.4 \, s$.
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_height.png}
-    \caption{Hysteretic Bounce: Particle Height vs Time}
-    \label{fig:bounce_height}
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_height.png}
+	\caption{Hysteretic Bounce: Particle Height vs Time showing decay in bounce amplitude due to inelastic contact}
+	\label{fig:bounce_height}
 \end{figure}
 
+The velocity evolution, shown in Figure \ref{fig:bounce_velocity}, provides quantitative validation of the collision law. The sharp discontinuities represent the impulsive contact forces. The energy dissipation is driven by the stiffness difference in the contact model, which dictates a theoretical coefficient of restitution $e_{theo} = \sqrt{k_1/k_2} = 0.5$. 
+
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_velocity.png}
-    \caption{Hysteretic Bounce: Particle Velocity vs Time}
-    \label{fig:bounce_velocity}
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/bounce_velocity.png}
+	\caption{Hysteretic Bounce: Particle Velocity vs Time illustrating velocity reversal and magnitude reduction consistent with $e=0.5$}
+	\label{fig:bounce_velocity}
+\end{figure}
+
+Analyzing the simulation data for the first impact:
+\begin{itemize}
+	\item Pre-impact velocity ($V_{in}$): $\approx -4.42 \, m/s$
+	\item Rebound velocity ($V_{out}$): $\approx 2.21 \, m/s$
+\end{itemize}
+The simulated coefficient of restitution is calculated as $e_{sim} = |V_{out} / V_{in}| \approx 0.50$. This exact agreement with the theoretical prediction confirms the correct implementation of the force hysteresis loop and the time integration scheme for discontinuous contact events.
+
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C05/bounce1.png}
+	\caption{Snapshot of the bouncing particle after second bounce at time t=0.95s}
+	\label{fig:bounce_image}
 \end{figure}
 
 \subsection{Test Case 2: Sliding Block}
-The sliding block test validates the tangential force model and Coulomb friction. A 1 kg block slides down a $30^\circ$ incline with $\mu=0.3$.
-
-Figure \ref{fig:sliding_velocity} compares the simulated velocity with the theoretical prediction. The simulated acceleration is approximately $2.30 \, m/s^2$, which is in excellent agreement with the theoretical value of $2.36 \, m/s^2$.
+The sliding block test is employed to validate the tangential force model, specifically the implementation of the Coulomb friction limit. A 1 kg cubic block is placed on a fixed floor inclined at $30^\circ$ with a friction coefficient of $\mu=0.3$.
 
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sliding_velocity.png}
-    \caption{Sliding Block: Velocity vs Time}
-    \label{fig:sliding_velocity}
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C05/sliding1.png}
+	\caption{Snapshot of the sliding block simulation at $t=0.5s$, showing the block traversing the $30^\circ$ incline.}
+	\label{fig:sliding_paraview}
 \end{figure}
+
+Figure \ref{fig:sliding_paraview} illustrates the qualitative result of the simulation, showing the block maintaining contact with the inclined plane while translating downwards. The geometric resolution of the contact between the block and the triangulated surface remains stable throughout the simulation.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sliding_position.png}
+	\caption{Sliding Block: Position vs Time showing parabolic displacement characteristic of constant acceleration.}
+	\label{fig:sliding_position}
+\end{figure}
+
+Figure \ref{fig:sliding_position} plots the position of the block over time. Following a brief settling period ($t < 0.2\,s$), the displacement exhibits a parabolic profile, indicating motion under constant acceleration.
+
+The velocity profile, presented in Figure \ref{fig:sliding_velocity}, offers a quantitative validation. 
+\begin{itemize}
+	\item \textbf{Initial Transient ($0 - 0.2\,s$):} The simulation shows initial velocity fluctuations. This is a typical DEM characteristic where the particle settles under gravity to establish stable contact overlaps and normal forces.
+	\item \textbf{Steady Acceleration ($0.2 - 1.0\,s$):} Once stable contact is established, the velocity increases linearly.
+\end{itemize}
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sliding_velocity.png}
+	\caption{Sliding Block: Velocity vs Time. The slope of the linear region represents an acceleration of $2.30 \, m/s^2$, consistent with the theoretical value of $2.36 \, m/s^2$.}
+	\label{fig:sliding_velocity}
+\end{figure}
+
+The theoretical acceleration for a sliding block is given by $a_{theo} = g(\sin\theta - \mu\cos\theta)$. For the defined parameters, $a_{theo} = 9.81(\sin(30^\circ) - 0.3\cos(30^\circ)) \approx 2.36 \, m/s^2$. 
+A linear fit applied to the simulation data in the steady region yields a simulated acceleration of $a_{sim} \approx 2.30 \, m/s^2$. The relative error is approximately $2.5\%$, demonstrating that the solver resolves the balance between the driving gravitational component and the resistive frictional force.
 
 \subsection{Test Case 3: Random Loose Packing}
-The random packing test validates multi-body interactions and geometric exclusion. 200 cubes were poured into a container.
-
-Figure \ref{fig:packing_ke} shows the decay of kinetic energy, confirming that the system settles into a stable static state. Figure \ref{fig:packing_phi} shows the evolution of the solid fraction, which stabilizes around $\phi \approx 0.50$, consistent with random loose packing of cubes.
+The random loose packing test validates the solver's capability to handle multi-body interactions, geometric exclusion (GJK algorithm), and global energy dissipation in a dense granular system. 200 cubic particles ($L=0.05\,m$) were poured into a confined container under gravity with a friction coefficient of $\mu=0.5$.
 
 \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_ke.png}
-    \caption{Random Packing: Kinetic Energy Decay}
-    \label{fig:packing_ke}
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/test3_packing.png}
+	\caption{Snapshots of the random packing simulation at $t=0.15s, 0.6s, 1.0s,$ and $3.0s$ (from top-left to bottom-right), showing the transition from free-fall to a stable pile.}
+	\label{fig:packing_paraview}
 \end{figure}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_phi.png}
-    \caption{Random Packing: Solid Fraction Evolution}
-    \label{fig:packing_phi}
+Figure \ref{fig:packing_paraview} presents the visual evolution of the packing process. 
+\begin{itemize}
+	\item At $t=0.15s$ and $0.6s$, the particles are in a free-fall and initial impact phase, characterized by a chaotic flow regime.
+	\item By $t=1.0s$, a pile begins to form, though significant particle rearrangement is still occurring.
+	\item At $t=3.0s$, the system has reached a quasi-static equilibrium, forming a stable packed bed.
+\end{itemize}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_ke.png}
+	\caption{Random Packing: Kinetic Energy vs Time. The rapid decay after $t=2.5s$ indicates effective energy dissipation via inelastic contact and friction.}
+	\label{fig:packing_ke}
 \end{figure}
+
+The kinetic energy evolution in Figure \ref{fig:packing_ke} confirms the system's transition from a dynamic to a static state. The energy peaks ($\approx 130\,J$) during the pouring phase ($0.5s < t < 2.0s$) as potential energy is converted to kinetic energy. Following this, the interaction forces (inelastic collisions and friction) successfully dissipate energy, resulting in a rapid decay to near-zero ($< 0.5\,J$) after $t=3.0s$, indicating a stable resting state.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_phi.png}
+	\caption{Random Packing: Solid Fraction vs Time. The system settles at $\phi \approx 0.50$, consistent with random loose packing for high-friction cubes.}
+	\label{fig:packing_phi}
+\end{figure}
+
+
+Figure \ref{fig:packing_phi} shows the evolution of the solid volume fraction ($\phi$). As the particles settle, the fractional density rises sharply. The system stabilizes at a solid fraction of $\phi \approx 0.50$. This value is consistent with literature for the \textit{random loose packing} (RLP) of frictional cubes, where higher friction ($\mu=0.5$) prevents the denser rearrangement observed in random close packing, leading to a more porous structure.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/packing_coord.png}
+	\caption{Random Packing: Average Coordination Number vs Time. The final value $Z \approx 3.2$ indicates a stable contact network.}
+	\label{fig:packing_coord}
+\end{figure}
+
+The stability of the final packing is further supported by the Coordination Number plot (Figure \ref{fig:packing_coord}). The average number of contacts per particle rises as the bed compresses, stabilizing at approximately $Z_{avg} \approx 3.2$.
+
 
 \section{CFD-DEM Validation}
 
-\subsection{Test Case 4: CFD-DEM Validation - Free Sedimentation of a settling cube}
+\subsection{Test Case 4: Free sedimentation of a particle in a static water column}
 
-This test case validates the coupling between the CFD and DEM solvers by simulating the free sedimentation of a single cubic particle in a quiescent fluid. The particle, with a side length of $L = 2$ mm and density $\rho_s = 2000$ kg/m$^3$, is released from rest in a water column ($\rho_f = 1000$ kg/m$^3$, $\mu = 0.001$ Pa$\cdot$s).
+The free sedimentation test case evaluates the solver's ability to resolve fluid-particle interaction forces and the resulting kinematic response of the particle. 
 
-\subsection{Simulation Setup}
-The computational domain is a rectangular column of dimensions $0.02 \times 1.0 \times 0.02$ m. The mesh resolution is set to approximately $L/2$ (1.0 mm) to balance accuracy and computational cost. The particle is initially positioned at $(0.01, 0.95, 0.01)$ m. The simulation is run for 2.0 seconds with a time step of $1 \times 10^{-3}$ s.
+A sand particle of size 2mm is allowed to dropped into a 0.2m by 0.2m water column with a height of 1m. The mesh resolution used for the background mesh consists of cell size equal to 0.5 mm. Figure \ref{fig:turbulence_compare} presents the visual evolution of the flow field at $t=0.05s$, $0.75s$, and $0.9s$. The visualization highlights the velocity magnitude and the development of the TKE in the wake of the falling particle. The solver captures the vortex shedding and the wake region trailing the particle.
 
-\subsection{Results}
-The particle accelerates downwards due to gravity, eventually reaching a terminal velocity where the drag force balances the net weight (gravity minus buoyancy). Figure \ref{fig:sedimentation_position} shows the vertical position of the particle over time, and Figure \ref{fig:sedimentation_velocity} shows the vertical velocity.
+The particle acceleration from the simulation data (Figure \ref{fig:accel_time}) reveals the force balance dynamics. Initially, the particle undergoes rapid acceleration due to gravity. As velocity increases, the pressure drag increases with the velocity, causing the net acceleration to decay towards zero. The fluctuations observed in the acceleration profile are attributed to the discrete nature of the immersed boundary forcing on the Eulerian grid as the Lagrangian particle traverses computational cells.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_position.png}
-    \caption{Vertical position of the settling cube over time.}
-    \label{fig:sedimentation_position}
+	\centering
+	\includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/test4_velocity.png}
+	\caption{Snapshots at $t=0.05s, 0.75s,$ and $0.9s$ showing velocity magnitude and Turbulent Kinetic Energy (k) fields generated by the particle wake.}
+	\label{fig:turbulence_compare}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_velocity.png}
-    \caption{Vertical velocity of the settling cube over time.}
-    \label{fig:sedimentation_velocity}
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/sedimentation_acceleration.png}
+	\caption{Vertical acceleration of the settling particle over time, showing the decay towards zero as terminal velocity is reached.}
+	\label{fig:accel_time}
 \end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{Figures/Chapters/C05/sedimentation_acceleration.png}
-    \caption{Vertical acceleration of the settling cube over time.}
-    \label{fig:sedimentation_acceleration}
-\end{figure}
-
-The results demonstrate that the solver correctly captures the physics of sedimentation, including the acceleration phase and the approach to terminal velocity. The Immersed Boundary Method (IBM) effectively couples the fluid and solid phases, producing the expected drag force without the need for explicit empirical drag correlations.
-
-\subsection{Test Case 5: Free sedimentation of a particle in a static water column}
-
-The release of sediment particles at rest at a height of 0.39m from the base of static water column is characterized by a sharp increase in velocity for the first 50 ms reaching a maximum velocity 100 ms.\par
-
-The position of the sediment particles of sizes 1.5 mm, 2 mm and 2.5 mm obtained from the simulation is given below:\par
-
-Table 6-1 Position of particles' centroid at different time\par
-\begin{tabular}{|p{0.9in}|p{1.1in}|p{1.0in}|p{1.0in}|} \hline 
-	\textbf{Time (t)} & \multicolumn{3}{|p{3.1in}|}{\textbf{Y-position (m) of particle size}} \\ \hline 
-	\textbf{} & \textbf{1.5 mm} & \textbf{2 mm} & \textbf{2.5 mm} \\ \hline 
-	0.01 & 0.3902 & 0.3902 & 0.3902 \\ \hline 
-	0.02 & 0.3892 & 0.3893 & 0.3892 \\ \hline 
-	0.03 & 0.3879 & 0.3880 & 0.3878 \\ \hline 
-	0.04 & 0.3863 & 0.3863 & 0.3860 \\ \hline 
-	0.05 & 0.3845 & 0.3844 & 0.3840 \\ \hline 
-	0.06 & 0.3826 & 0.3823 & 0.3817 \\ \hline 
-	0.07 & 0.3807 & 0.3802 & 0.3793 \\ \hline 
-	0.08 & 0.3789 & 0.3780 & 0.3769 \\ \hline 
-	0.09 & 0.3770 & 0.3757 & 0.3745 \\ \hline 
-	0.10 & 0.3751 & 0.3734 & 0.3720 \\ \hline 
-	0.11 & 0.3732 & 0.3712 & 0.3694 \\ \hline 
-	0.12 & 0.3713 & 0.3689 & 0.3670 \\ \hline 
-	0.13 & 0.3693 & 0.3667 & 0.3645 \\ \hline 
-	0.14 & 0.3674 & 0.3645 & 0.3619 \\ \hline 
-	0.15 & 0.3654 & 0.3622 & 0.3594 \\ \hline 
-	0.16 & 0.3635 & 0.3599 & 0.3569 \\ \hline 
-	0.17 & 0.3615 & 0.3576 & 0.3544 \\ \hline 
-	0.18 & 0.3596 & 0.3554 & 0.3518 \\ \hline 
-	0.19 & 0.3577 & 0.3531 & 0.3492 \\ \hline 
-	0.20 & 0.3557 & 0.3508 & 0.3466 \\ \hline 
-\end{tabular}
-\par % Added \par after tabular environment
+The solver's accuracy is further verified by comparing the localized pressure field. The internal cells immediately below the particle boundary (-ve Y direction) exhibit a localized pressure increase due to the compression effect of the descending particle on the fluid control volume. Conversely, a pressure drop is observed in the wake region above the particle.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/position_case_freeSed.png}
-	\caption{Position of particle of size 2mm $\left({\rho }_s=1000\right)$ at time steps (t=0, 0.05, 0.1, 0.85, 0.9, 0.95 s) from top left to bottom right}
-	\label{fig:Position of particle}
-\end{figure}
-
-The internal cells just below the boundary of the particle along (-ve Y direction) resulted in the localized increased of pressure due to compression effect in the fluid control volume. The zone of localized increase in pressure is found to be few cm thick. Similarly, a localized decrease in pressure is observed in the cells just above the boundary (+ve Y direction).\par
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/localised_pressure_case_freeSed.png}
+	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C05/localised_pressure_case_freeSed.png}
 	\caption{Increased localized pressure just below immersed boundary}
 	\label{fig:Increased localized pressure just below immersed boundary}
 \end{figure}
 
-The position of the particle and the corresponding velocity at different times is plotted in the graph below:\par
+\subsection{Comparative Analysis of Turbulence Models}
+To assess the sensitivity of the settling dynamics to turbulence closure, a simulation of the sedimentation process was conducted using two distinct RANS models: Standard $k-\epsilon$ and $k-\omega$ SST.
+
+A quantitative comparison of the particle kinematics between the $k-\epsilon$ and $k-\omega$ SST models is shown in Figure \ref{fig:sed_SST} and \ref{fig:sed_epsilon}. The results indicate that for a single particle settling in a quiescent fluid, the choice of turbulence model has a negligible effect on the trajectory and terminal velocity.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{Figures/Chapters/C05/sedimentation_k_epsilon.png}
+	\caption{Sedimentation of 2mm sand particle in a quiescent fluid with k-$\epsilon$ RANS model}
+	\label{fig:sed_epsilon}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\textwidth]{Figures/Chapters/C05/sedimentation_k_omega_SST.png}
+	\caption{Sedimentation of 2mm sand particle in a quiescent fluid with k-$\omega$ SST RANS model}
+	\label{fig:sed_SST}
+\end{figure}
+
+\begin{itemize}
+	\item \textbf{Velocity:} Both models predict a rapid acceleration followed by a steady terminal velocity of approximately $-0.23 \, m/s$. The velocity curves overlap almost perfectly.
+	\item \textbf{Acceleration:} The decay of acceleration is identical, suggesting that the drag forces calculated by the immersed boundary method are dominant over the variations in eddy viscosity ($\nu_t$) predicted by the two turbulence models in this specific low-Reynolds number regime.
+\end{itemize}
+
+Figure \ref{fig:sediment_3_particles} illustrates the position and velocity evolution for particles of sizes 1.5 mm, 2 mm, and 2.5 mm. The particles exhibit a characteristic settling behavior: an initial acceleration phase driven by gravity, followed by a transition to a constant terminal velocity as hydrodynamic drag balances the gravitational force. The larger particles (2.5 mm) reach a higher terminal velocity ($\approx 0.25 \, m/s$) compared to the smaller particles ($\approx 0.19 \, m/s$), consistent with Stokes' law and Newton's drag regimes.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/position_plot_case_freeSed.png}
-	\caption{Sediment particles' position and velocity at different time}
-	\label{fig:Sediment particles' position and velocity at different time}
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/position_plot_case_freeSed.png}
+	\caption{Sediment particles' position and velocity evolution for sizes 1.5 mm, 2.0 mm, and 2.5 mm.}
+	\label{fig:sediment_3_particles}
 \end{figure}
 
-The settling velocities and the particle sizes are transformed into non-dimensional terms to compare the position of settling velocities obtained from the simulation with the results of free settling experiments for well-rounded particles \parencite{dietrich_settling_1982}.\par
+Finally, the simulated settling velocities were non-dimensionalized and compared against experimental results for well-rounded particles \parencite{dietrich_settling_1982}. As shown in Figure \ref{fig:dietrich_comparison}, the solver demonstrates good agreement with standard experimental correlations for non-spherical natural sediments.
 
 Table 6-2 Non Dimensionalization of particle size and settling velocity\par
 \begin{tabular}{|p{1.0in}|p{0.6in}|p{1.0in}|p{1.2in}|} \hline 
@@ -162,29 +204,131 @@ Table 6-2 Non Dimensionalization of particle size and settling velocity\par
 \end{tabular}
 \par % Added \par after tabular environment
 
-\begin{figure}[ht]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C06/dimensionless_parameters_case_freeSed.png}
-	\caption{Comparison of settling velocity obtained from the solver with the physical experiments performed for well-rounded particles \parencite{dietrich_settling_1982}}
-	\label{fig:Comparison of settling velocity obtained from the solver with the physical experiments performed for well-rounded particles}
+	\includegraphics[width=0.6\textwidth]{Figures/Chapters/C05/dimensionless_parameters_case_freeSed.png}
+	\caption{Comparison of settling velocity obtained from the solver with physical experiments for well-rounded particles \parencite{dietrich_settling_1982}.}
+	\label{fig:dietrich_comparison}
 \end{figure}
 
+\subsection{Test Case 5: The Floating Cube Equilibrium}
+
+This test case validates the coupling between the Immersed Boundary Method (IBM) and the Volume of Fluid (VOF) method, specifically testing the solver's ability to resolve buoyancy forces at the free surface. A cube with density $\rho_s = 500 \, kg/m^3$ (half that of water) was dropped from air into a static water column.
+
+Figure \ref{fig:floating_paraview} visualizes the interaction between the solid body and the free surface (represented by the blue-red interface).
+\begin{itemize}
+	\item At $t=0.05s$, the particle impacts the free surface.
+	\item By $t=0.2s$, the particle is fully submerged due to the inertia of the drop.
+	\item At $t=0.4s$ and $0.6s$, the particle resurfaces and begins to oscillate, creating disturbances in the $\alpha_{water}$ field.
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test5_float.png}
+	\caption{Snapshots of the floating cube simulation at $t=0.05, 0.2, 0.4, 0.6 s$. The color scale represents the Volume of Fluid (alpha.water) and the solid velocity magnitude.}
+	\label{fig:floating_paraview}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/test5_oscillation.png}
+	\caption{Floating Cube: Vertical Position and Velocity vs Time. The particle performs damped oscillations and settles at the equilibrium position where Buoyancy equals Weight.}
+	\label{fig:floating_plot}
+\end{figure}
+
+The quantitative behavior is shown in Figure \ref{fig:floating_plot}. The vertical position ($Y$) exhibits a damped harmonic oscillation. The particle initially overshoots the equilibrium level, submerging deeper into the fluid, before the buoyancy force pushes it back up. Over time, hydrodynamic drag dissipates the kinetic energy, and the particle position converges towards the theoretical equilibrium line (green dotted line). The velocity ($V_y$) oscillates around zero, with the amplitude decaying over time, confirming the stability of the fluid-solid coupling algorithm at the free surface.
+
+\subsection{Test Case A: Particle-Laden Flow in a Rectangular Channel}
+
+This study case evaluates the solver's capability to simulate realistic sediment transport regimes (bedload and saltation) under varying flow conditions. Two flow regimes were simulated: sub-critical and super-critical flow, characterized by different inlet velocities. The interaction between the turbulent boundary layer and the mobile sediment bed was analyzed using three RANS turbulence models: Standard $k-\epsilon$, $k-\omega$ SST, and Standard $k-\omega$.
+
+Figures \ref{fig:sub_critical_field_k_epsilon} to \ref{fig:super_critical_fields_k_omega_SST} present the instantaneous flow fields at $t=0.600s$ for the sub-critical and super-critical cases for three models. In the sub-critical case, particles primarily exhibit rolling and sliding motion (bedload transport) with limited saltation. Conversely, the super-critical case shows significant particle entrainment into the water column, indicating a transition to suspended load transport. \par
+
+The pressure field (Figure \ref{fig:sub_critical_field_k_epsilon}b) clearly shows the hydrostatic gradient interrupted by local high-pressure stagnation points on the upstream face of the particles. The velocity magnitude (Figure \ref{fig:sub_critical_field_k_epsilon}c) reveals the formation of a boundary layer. Notably, the presence of the sediment bed creates a roughness effect, retarding the fluid velocity near the bottom wall ($y < 0.1m$). The Turbulent Kinetic Energy (TKE) field (Figure \ref{fig:sub_critical_field_k_epsilon}d) indicates that turbulence production is maximal in the shear layer immediately above the sediment bed and in the wake of entrained particles. The dissipation rate ($\epsilon$/$\omega$) is highest at the fluid-particle interfaces, illustrating the damping effect of solid particles on turbulence at small scales. \par
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Subcritical-k-epsilon.png}
+	\caption{CFD-DEM Sub-Critical Flow Simulation with k-$\epsilon$ turbulence model at ($t=0.600s$): Visualisation of (a) Sediment positions, (b) Pressure, (c) Velocity Magnitude, (d) Turbulent Kinetic Energy, and (e) Dissipation Rate}
+	\label{fig:sub_critical_field_k_epsilon}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Subcritical-k-omega-standard.png}
+	\caption{CFD-DEM Sub-Critical Flow Simulation with k-$\omega$ standard turbulence model at ($t=0.600s$)}
+	\label{fig:sub_critical_fields_k_omega_std}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Subcritical-k-omega-SST.png}
+	\caption{CFD-DEM Sub-Critical Flow Simulation with k-$\omega$ SST turbulence model at ($t=0.600s$)}
+	\label{fig:sub_critical_fields_k_omega_SST}
+\end{figure}
+
+
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Supercritical-k-epsilon.png}
+	\caption{CFD-DEM Super-Critical Flow Simulation with k-$\epsilon$ turbulence model at ($t=0.600s$)}
+	\label{fig:super_critical_fields_k_epsilon}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Supercritical-k-omega-standard.png}
+	\caption{CFD-DEM Super-Critical Flow Simulation with k-$\omega$ standard turbulence model at ($t=0.600s$)}
+	\label{fig:super_critical_fields_k_omega_std}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C05/Supercritical-k-omega-SST.png}
+	\caption{CFD-DEM Super-Critical Flow Simulation with k-$\omega$ SST turbulence model at ($t=0.600s$)}
+	\label{fig:super_critical_fields_k_omega_SST}
+\end{figure}
+
+The temporal evolution of sediment flux, maximum particle velocity, and maximum TKE for both flow regimes is presented in Figure \ref{fig:sediment_plots}. In the sub-critical regime, the $k-\epsilon$ model predicts the onset of motion earliest ($t \approx 0.18s$) and sustains a flux of approximately $1.7$ particles/s. The $k-\omega$ SST model shows a delayed initiation ($t \approx 0.28s$) with a lower average flux. The Standard $k-\omega$ model predicts the lowest transport activity. On the other hand, in the super-critical regime, the flux increases significantly. The $k-\epsilon$ model reaches a peak flux of $2.9$ particles/s. The $k-\omega$ SST model eventually matches this peak but with a significant time lag, initiating transport at $t \approx 0.35s$ compared to $t \approx 0.18s$ for $k-\epsilon$.
+
+The maximum particle velocities correlate with the fluid drag forces. In the super-critical regime, the Standard $k-\omega$ model predicts a sharp spike in particle velocity up to $0.9 \, m/s$ early in the simulation ($t \approx 0.1s$), likely due to an overestimation of near-wall velocity gradients before the flow fully develops. In contrast, the $k-\epsilon$ and $k-\omega$ SST models show more stable velocity profiles, oscillating between $0.5$ and $0.6 \, m/s$, which is consistent with the expected slip velocity between the fluid and the heavy sediment particles.
+
+The $k-\omega$ SST model consistently predicts the highest TKE values, peaking at $0.7 \, m^2/s^2$ in the sub-critical case and $0.42 \, m^2/s^2$ in the super-critical case. The Standard $k-\omega$ model predicts significantly lower TKE ($< 0.15 \, m^2/s^2$), suggesting it may be under-predicting the wake turbulence generated by the particles.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1.0\textwidth]{Figures/Chapters/C05/sediment_transport_plots.png}
+	\caption{Comparison of RANS models for Sub-Critical (Left) and Super-Critical (Right) flow. Top: Sediment Flux; Middle: Max Particle Velocity; Bottom: Max Turbulent Kinetic Energy.}
+	\label{fig:sediment_plots}
+\end{figure}
+
+\subsubsection{Comparative Assessment of RANS Turbulence Models}
+
+The comparative analysis of the RANS closure schemes reveals distinct behaviors in the context of Eulerian-Lagrangian sediment transport. The \textbf{Standard $k-\epsilon$ model} consistently predicts the highest sediment flux and earliest initiation of motion. This is attributed to its tendency to overestimate turbulent kinetic energy in regions of strong acceleration and stagnation (such as the leading edge of particles), resulting in a higher effective viscosity that exerts greater drag on the particles. While this leads to "active" transport, it may over-predict erosion rates.\par
+
+Conversely, the \textbf{Standard $k-\omega$ model} appears overly dissipative in this configuration, predicting the lowest TKE and delayed sediment transport. It is known to be sensitive to free-stream boundary conditions, which may affect the bulk flow velocity in the channel. The \textbf{$k-\omega$ SST model} predicts high TKE production in the particle wakes (Figure \ref{fig:sediment_plots}, bottom row) without translating this immediately into excessive particle velocity. This suggests that the SST model effectively captures the energy loss due to turbulence in the wake, acting as a stabilizing factor on the sediment bed. Therefore, for resolved CFD-DEM simulations involving bed scouring and wake interactions, the $k-\omega$ SST model is recommended.\par
+
 \section{Discussion}
+\label{sec:discussion}
 
-\subsection{Comparative Analysis of RANS Turbulence Closure Schemes in SedFoam}
+The results presented in this chapter validate the development and implementation of the coupled CFD-DEM solver within the OpenFOAM framework. The study progressed from fundamental DEM verification to complex coupled simulations, highlighting the solver's ability to resolve multi-physics interactions.
 
-The comparative analysis of the Reynolds-Averaged Navier-Stokes (RANS) turbulence closure schemes in SedFoam highlights distinct performance differences between the $k-\omega$ and $k-\varepsilon$ models in simulating single-phase flow near a solid boundary. The velocity distribution at t=1000s reveals that the $k-\omega$ model produces a steeper velocity gradient near the boundary compared to the $k-\varepsilon$ model, as depicted in Figure 6.1. This indicates a more accurate representation of the boundary layer, aligning with the $k-\omega$ model's recognized strength in capturing flows dominated by high shear stresses \parencite{fylladitakis_kolmogorov_2018}. In contrast, the $k-\varepsilon$ model exhibits higher turbulent kinetic energy (k), as shown in Figure 6.2, suggesting an overestimation of fluctuating velocity components that may not reflect the physical conditions near the boundary. Validation against Direct Numerical Simulation (DNS) results by \parencite{mansour_direct_1999} further supports this observation, with the $k-\omega$ model achieving a Nash-Sutcliffe Efficiency (NSE) value of 0.97, surpassing the $k-\varepsilon$ model's NSE of 0.93 (Figures 6.3 and 6.4). These findings underscore the $k-\omega$ model's superior suitability for wall-bounded shear flows, while the $k-\varepsilon$ model may be better suited for high Reynolds number flows away from boundaries, consistent with existing literature.\par
+\subsection{Validation of Lagrangian Contact Physics}
+The fundamental DEM test cases (Hysteretic Bounce, Sliding Block, and Random Packing) confirm the numerical stability and physical accuracy of the contact algorithms. The hysteretic bounce test yielded a coefficient of restitution of $0.50$, matching the theoretical value derived from the loading/unloading stiffness ratio exactly. This indicates that the Walton-Braun model correctly dissipates energy during normal collisions, a critical factor for stabilizing sediment beds. Furthermore, the random loose packing simulation achieved a solid fraction of $\phi \approx 0.50$ with an average coordination number of 3.2. This aligns with established literature for frictional cubes, verifying that the Gilbert-Johnson-Keerthi (GJK) algorithm effectively manages geometric exclusion and multi-body force chains without numerical instabilities.
 
-In the scour study beneath a rigid wall pipe, the $k-\omega$ model again demonstrates enhanced performance over the $k-\varepsilon$ model in resolving sediment transport dynamics and vortex formation. The initiation of scouring, marked by a streamline beneath the pipe at t=0.5s (Figure 6.5), is better captured by the $k-\omega$ model, which effectively resolves the initial vortex from the pipe's top, as seen in velocity plots at t=1s and t=3s (Figures 6.6 and 6.7). The $k-\varepsilon$ model, however, shows a poorly developed vortex, despite predicting a higher sediment transport rate due to its elevated production and dissipation of turbulent kinetic energy (Figures 6.8--6.10). This higher transport rate does not translate to improved accuracy, as evidenced by the comparison with physical experiments by \parencite{mao_interaction_1986}. The bed profile simulated with the $k-\omega$ model achieves an NSE value of 0.72, significantly higher than the 0.27 obtained with the $k-\varepsilon$ model (Figure 6.11). This superior performance in two-phase flows near the bed, characterized by high sediment concentrations and shear stresses, reinforces the $k-\omega$ model's applicability for sediment-laden flows in river systems, where accurate near-bed dynamics are critical.\par
+\subsection{Fidelity of Fluid-Structure Interaction}
+The coupling between the fluid and solid phases was rigorously tested through sedimentation and floating cases. A key finding from the free sedimentation test (Test Case 4) is the solver's accuracy in reproducing terminal velocities for non-spherical particles. The simulated results showed strong agreement with the experimental correlations of \textcite{dietrich_settling_1982}, validating the drag force calculation via the Immersed Boundary Method (IBM).
 
-\subsection{OpenFOAM based CFD-DEM Solver: Free sedimentation of a particle in a static water column}
+Additionally, the Floating Cube test (Test Case 5) demonstrated the coupling between the IBM and the Volume of Fluid (VOF) solver. The damped harmonic oscillation of the cube and its convergence to the theoretical equilibrium line confirms that the solver correctly integrates pressure forces across the fluid-solid interface, even in the presence of a free surface. This capability is essential for simulating open-channel flows where sediments may interact with the air-water interface.
 
-Simulations of cubic particles settling in a water column reveal the solver's capacity to handle key sediment transport processes. A rapid increase in velocity to approximately 100 m/s within the first 50 milliseconds reflects gravitational acceleration, a key factor that dictates the initial path of a particle and its interaction with the surrounding fluid. This consistent pattern across particle sizes (1.5, 2 and 2.5 mm) confirms the reliability of the solver for controlled sedimentation scenarios.\par
+\subsection{Impact of Turbulence Closure on Sediment Transport}
+A significant portion of this study focused on the sensitivity of sediment transport to RANS turbulence modeling. A critical distinction was observed between quiescent settling and shear flows. In the single-particle sedimentation test, the choice of turbulence model ($k-\epsilon$ vs. $k-\omega$ SST) had negligible impact on the particle's trajectory and terminal velocity. In this regime, motion is dominated by pressure drag and buoyancy, rendering the eddy viscosity contribution secondary. In the rectangular channel simulations (Test Case A), the turbulence model played a decisive role in the onset of erosion and sediment flux rates.\par
 
-The observed localized pressure variations near the particle boundaries provide further insight into the solver's capabilities. Specifically, the increase in pressure below the particle (along with the negative Y-direction) and the corresponding decrease above it (positive Y-direction) aligns with fundamental fluid dynamics principles. These gradients arise from the downward motion of the particle, which compresses the fluid below and creates a rarefaction zone above. The solver's ability to resolve these effects highlights the precision of the body-fitted immersed boundary method, which accurately embeds the cubical particle geometry within the computational fluid domain.\par
+The comparative assessment reveals that the \textbf{Standard $k-\epsilon$ model} predicts the most aggressive sediment transport. It tends to over-produce turbulent kinetic energy (TKE) at stagnation points (the upstream face of particles), leading to artificially high effective viscosity and drag. This results in an earlier onset of motion and higher sediment flux, which may lead to an over-prediction of scour depth in practical engineering applications.
 
-A key validation of the solver comes from comparing the simulated settling velocities with experimental data from \parencite{dietrich_settling_1982} for well-rounded particles, adjusted through dimensionless parametrization. Minor deviations observed in dimensionless settling velocities (e.g. \textbf{W*} values of 733, 1208, and 1631 for particle sizes of 1.5 mm, 2 mm and 2.5 mm, respectively) may result from shape differences or the one-way coupling approach employed. In this framework, the fluid influences the motion of the particles via pressure and drag forces, but the particle does not reciprocally affect the fluid flow. Incorporating two-way coupling in future iterations could refine these predictions by accounting for fluid-particle feedback, potentially reducing such discrepancies.\par
+Conversely, the \textbf{Standard $k-\omega$ model} proved to be the most dissipative, predicting the lowest TKE and delayed initiation of sediment motion. While accurate for wall-bounded flows, its sensitivity to free-stream conditions appears to dampen the wake turbulence required to lift particles into suspension in this specific configuration.
 
-The PIMPLE algorithm for fluid flow and DEM for particle motion ensure steady performance, evident in smooth position changes and consistent velocity trends. However, limitations persist one-way coupling ignores the particle impact on the flow, and the lack of multi-particle or boundary interactions restricts the solver to simple cases, missing out on real-world complexities such as bedload or erosion.\par
+The \textbf{$k-\omega$ SST model} demonstrated the most physically realistic balance. By utilizing $k-\omega$ near the sediment bed and $k-\epsilon$ in the free stream, it captured the wake turbulence generated by the particles (as evidenced by the TKE fields in Figure \ref{fig:sub_critical_fields_k_omega_SST}) without the excessive energy production of the standard $k-\epsilon$ model. The SST model predicts a delayed but sustained transport regime, suggesting it better captures the shielding effects and wake interactions inherent in dense sediment beds.
 
-Despite these limitations, the solver represents a promising advancement in coupling CFD and DEM within the OpenFOAM framework. Its successful simulation of free sedimentation validates the body-fitted immersed boundary method for representing non-spherical particles, an objective central to this research, and establishes a foundation for further development. Future enhancements could include implementing two-way coupling to capture bidirectional fluid-particle interactions, as well as integrating particle-particle and particle-boundary dynamics to simulate more realistic sediment transport scenarios.\par

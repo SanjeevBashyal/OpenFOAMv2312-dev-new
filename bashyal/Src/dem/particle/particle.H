@@ -158,6 +158,13 @@ namespace Bashyal
             const Foam::point& initialPosition
         );
 
+        particle(
+            const Foam::fileName& stlFile,
+            const Foam::scalar mass,
+            const Foam::tensor& moi,
+            const Foam::point& initialPosition
+        );
+
         // * * * * * * * * * * * * * * * * Destructor * * * * * * * * * * * * * * * //
 
         /**

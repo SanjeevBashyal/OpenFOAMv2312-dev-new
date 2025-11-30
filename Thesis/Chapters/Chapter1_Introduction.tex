@@ -42,7 +42,7 @@ Addressing these gaps requires the development of a coupled turbulence closure a
 The research questions of the study are as follows:
 \begin{itemize}
 	\item What are the key interactions between turbulent flow structures and particle transport processes in river systems, and how can these interactions be quantitatively modeled?
-	\item How well does the OpenFOAM based CFD-DEM solver perform in predicting sediment mixed flow under various flow conditions compared to traditional models?
+	\item How well does the OpenFOAM based CFD-DEM solver perform in predicting sediment mixed flow under various flow conditions?
 	\item What is the influence of turbulence closure scheme on RANS simulations involving sediment transport dynamics?
 	
 \end{itemize}
@@ -51,8 +51,8 @@ The research questions of the study are as follows:
 The objectives of the research are as follows:
 \begin{itemize}
 	\item To develop a model that combines 3D turbulence modeling techniques of finite volume method with discrete element method in the immersed boundary mesh to simulate particle transport processes during fluid flow.
-	\item To implement the model in OpenFOAM framework and to assess the predictive capabilities of the model by comparing its performance against previously studied models and physical experiments.
-	\item To identify the most suitable two equation RANS turbulence closure scheme for accurate prediction of sediment transport phenomenon near bed region.
+	\item To implement the model in OpenFOAM framework and to assess the predictive capabilities of the model.
+	\item To identify the most suitable two equation RANS turbulence closure scheme for better prediction of sediment transport phenomenon near bed region in open channel flow.
 
 \end{itemize}
 
@@ -73,23 +73,24 @@ The time-averaged nature of RANS also complements the discrete particle tracking
 
 \subsection{Computational Resources}
 
-All simulations reported in this thesis were conducted on a laptop equipped with an Intel Core i7-12700H processor, NVIDIA RTX 3060 (Laptop) graphics card, 24 GB of RAM, and 1 TB SSD storage on wsl environment insde Windows 11. While these specifications provided adequate computational power for the scope of this research, they inevitably limited the scale and resolution of simulations that could be performed. The computational constraints influenced decisions regarding domain sizes and mesh resolutions used in the CFD-DEM coupling studies, necessitating a balance between accuracy and computational feasibility.\par
+All simulations reported in this thesis were conducted on a laptop equipped with an Intel Core i7-12700H processor, NVIDIA RTX 3060 (Laptop) graphics card, 16 GB of RAM, and 500 GB SSD storage on wsl environment insde Windows 11. While these specifications provided adequate computational power for the scope of this research, they inevitably limited the scale and resolution of simulations that could be performed. The computational constraints influenced decisions regarding domain sizes and mesh resolutions used in the CFD-DEM coupling studies, necessitating a balance between accuracy and computational feasibility.\par
 
 \subsection{Validation Limitations}
 
 This research does not include physical experiments conducted specifically for model validation. Instead, validation relies entirely on physical experiments reported in the literature. While this approach provides access to well-documented benchmark cases, it introduces a dependency on available experimental data. The comprehensiveness and representativeness of the validation dataset may be limited if the available data does not cover a sufficiently wide range of flow conditions, sediment characteristics, or geometric configurations. This limitation is acknowledged, and efforts were made to select validation cases that best represent the intended application of the developed solver.\par
 
 \section{Thesis Structure}
-This thesis is organized into six chapters, each addressing specific aspects of the research on developing an OpenFOAM-based CFD-DEM solver for sediment transport modeling. The structure is designed to present the theoretical foundations, methodological approach, implementation details, and validation of the developed solver.\par
 
-\textbf{Chapter 1: Introduction} provides the context and motivation for the research, presenting the background of sediment transport modeling, the problem statement, research questions, objectives, significance of the study, and scope and limitations. This chapter establishes the foundation for understanding the need for an advanced CFD-DEM solver capable of accurately modeling sediment-fluid interactions.\par
+This thesis is organized into six chapters, leading from theoretical foundations to the technical implementation and final validation of the coupled solver `fineDEMfoam.
 
-\textbf{Chapter 2: Literature Review} examines the evolution of sediment transport modeling approaches, from historical developments to contemporary methods. It reviews Eulerian-Eulerian, Eulerian-Lagrangian, and Lagrangian-Lagrangian modeling frameworks, highlighting the strengths and limitations of existing solvers such as SedFoam and discussing the advancements in CFD-DEM coupling techniques.\par
+\textbf{Chapter 1: Introduction} establishes the research context, highlighting the complexities of sediment transport in turbulent flows. It defines the problem statement regarding the limitations of existing depth-integrated and spherical-particle models, outlines the specific research questions and objectives, and delineates the scope and limitations of the study.
 
-\textbf{Chapter 3: Methodology} outlines the systematic approach adopted for the research, beginning with the study of existing solvers. It details the analysis of SedFoam using different RANS turbulence closure schemes ($k-\epsilon$ and $k-\omega$) through two test cases: single-phase flow near a solid boundary and scour formation influenced by a rigid cylinder. The chapter establishes the validation techniques and framework for assessing the developed solver.\par
+\textbf{Chapter 2: Literature Review} provides the theoretical framework for the research. It surveys the governing Navier-Stokes equations and RANS turbulence closures ($k-\epsilon$, $k-\omega$). It critically reviews existing sediment transport modeling approaches—ranging from Eulerian-Eulerian two-phase models to Lagrangian particle tracking—and analyzes current solvers like SedFoam and CFDEM to identify the specific gap that necessitates a VoF based CFD-DEM approach.
 
-\textbf{Chapter 4: CFD-DEM Implementation in OpenFOAM} describes the technical implementation of the CFD-DEM solver within the OpenFOAM framework. It covers geometry and meshing strategies, including the background mesh generation, sediment flow domain definition, and the immersed boundary method for handling non-spherical particles. The chapter details the mesh-particle intersection algorithms and the computational framework for coupling fluid and particle dynamics.\par
+\textbf{Chapter 3: Methodology} outlines the strategic workflow adopted for the solver development. It details the computational environment setup, the specific physical laws selected for the DEM module (such as the Walton-Braun force model), and defines the test cases. This chapter introduces the five fundamental validation test cases and the primary application case used to assess the solver's performance.
 
-\textbf{Chapter 5: Results} presents the findings from the comparative analysis of turbulence closure schemes in SedFoam and the validation results of the developed CFD-DEM solver. It includes comparisons with Direct Numerical Simulation (DNS) data and experimental results, evaluating the performance of different turbulence models and demonstrating the solver's capability to predict sediment transport phenomena.\par
+\textbf{Chapter 4: CFD-DEM Implementation in OpenFOAM} serves as the technical core of the thesis. It documents the specific coding implementation of the `fineDEMfoam` solver. Key topics include the generation of `backgroundMesh`, the implementation of the Immersed Boundary Method (IBM) for resolving fluid forces on non-spherical particles, the Gilbert-Johnson-Keerthi (GJK) algorithm for collision detection, and the integration of the PIMPLE algorithm for fluid-solid coupling.
 
-\textbf{Chapter 6: Conclusion} summarizes the key findings of the research, addresses the extent to which the research objectives were achieved, and provides recommendations for future work. It discusses the limitations of the current implementation and suggests directions for enhancing the solver's capabilities, including two-way coupling, multi-particle interactions, and complex sediment transport scenarios.\par
+\textbf{Chapter 5: Results and Discussion} presents the quantitative and qualitative outcomes of the simulations. It begins with DEM-only validation (hysteretic bounce, sliding block, random packing) and progresses to coupled CFD-DEM validation, including free sedimentation, floating cube equilibrium test and a comparative analysis of RANS turbulence models applied to sediment transport in a rectangular channel.
+
+\textbf{Chapter 6: Conclusion and Recommendations} synthesizes the key findings of the research in relation to the initial objectives. It summarizes the capabilities of the developed solver, discusses the implications of the turbulence modeling comparison, acknowledges the limitations of the current approach, and proposes specific directions for future development.
