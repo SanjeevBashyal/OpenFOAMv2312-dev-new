@@ -3,21 +3,26 @@
 
 \section{Summary of Research}
 
-This research presented the development, implementation, and validation of \textbf{fineDEMfoam}, a coupled CFD-DEM solver within the OpenFOAM framework designed to simulate sediment transport in turbulent flows. The solver couples the Finite Volume Method (FVM) for the fluid phase, governed by the Reynolds-Averaged Navier-Stokes (RANS) equations, with the Discrete Element Method (DEM) for the solid phase. A key feature of the implementation is the utilization of a Immersed Boundary Method (IBM) to resolve fluid forces on polygonal particles, alongside the Gilbert-Johnson-Keerthi (GJK) algorithm for collision detection. The research systematically progressed from fundamental verification of contact mechanics to complex coupled simulations involving sediment particles in open channel systems.
+This research presented the development, implementation, and validation of \textbf{fineDEMfoam}, a coupled CFD-DEM solver within the OpenFOAM framework designed to simulate sediment transport in free surface turbulent flows. The solver couples the Finite Volume Method (FVM) for the fluid phase, governed by the Reynolds-Averaged Navier-Stokes (RANS) equations, with the Discrete Element Method (DEM) for the solid phase. A key feature of the implementation is the utilization of a Immersed Boundary Method (IBM) to resolve fluid forces on polygonal particles, alongside the Gilbert-Johnson-Keerthi (GJK) algorithm for collision detection. The research systematically progressed from fundamental verification of contact mechanics to complex coupled simulations involving sediment particles in open channel systems.
+
+\section{Fulfillment of Objectives}
+
+The extent to which the specific research objectives outlined in Chapter 1 were achieved is detailed below:
+
 
 \section{Fulfillment of Objectives}
 
 The extent to which the specific research objectives outlined in Chapter 1 were achieved is detailed below:
 
 \begin{itemize}
-	\item \textbf{Objective 1: To develop a model combining 3D turbulence modeling with DEM in an immersed boundary mesh.}
-	\par This objective was achieved through the implementation of the `fineDEMfoam` solver. The solver integrates the PIMPLE algorithm for incompressible transient flow with a custom DEM library. The implementation of the `backgroundMesh` class and the IBM forcing term ($\mathbf{f}_{ib}$) allows for the dynamic representation of solid volume fractions and velocity fields on the Eulerian grid, capturing the presence of non-spherical particles (cubes) within the turbulent flow domain.
+	\item \textbf{Objective 1: To develop a mathematical model that combines RANS turbulence closure models with discrete element method to simulate particle transport processes during free surface water flows.}
+	\par This objective was achieved through the development and implementation of the `fineDEMfoam` solver. The mathematical model couples the Reynolds-Averaged Navier-Stokes (RANS) equations for the fluid phase with the equations of motion for individual solid particles, solved using the Discrete Element Method (DEM). To handle free surface flows, the Volume of Fluid (VOF) method was integrated to track the air-water interface. The coupling between the Eulerian fluid grid and the Lagrangian particles was realized using an Immersed Boundary Method (IBM), which accounts for the momentum exchange and solid volume fraction, thus creating a comprehensive model for simulating sediment transport in turbulent, free-surface environments.
 	
-	\item \textbf{Objective 2: To implement the model in OpenFOAM and assess predictive capabilities against established models and experiments.}
-	\par The solver was validated through a series of fundamental test cases. The mechanical accuracy of the DEM module was confirmed via the hysteretic bounce test and the sliding block test. The CFD-DEM coupling was validated against the experimental correlations of \textcite{dietrich_settling_1982} for free sedimentation, showing close agreement in terminal velocity predictions. Furthermore, the floating cube test case demonstrated the solver's ability to handle three-phase interactions (Air-Water-Sediment) by successfully coupling IBM with the Volume of Fluid (VOF) method.
+	\item \textbf{Objective 2: To implement the model in OpenFOAM framework and to assess the predictive capabilities of the model.}
+	\par The mathematical model was successfully implemented within the OpenFOAM framework. The solver's predictive capabilities were rigorously assessed through a series of validation test cases. The mechanical accuracy of the DEM module was confirmed via the hysteretic bounce test and the sliding block test. The CFD-DEM coupling was validated against the experimental correlations of \textcite{dietrich_settling_1982} for free sedimentation, demonstrating close agreement in terminal velocity predictions. Furthermore, the solver's ability to handle three-phase (Air-Water-Sediment) interactions was confirmed by the floating cube test case, which validated the coupling of the IBM with the VOF method.
 	
-	\item \textbf{Objective 3: To identify the most suitable RANS turbulence closure scheme for sediment transport.}
-	\par A comparative study of $k-\epsilon$, Standard $k-\omega$, and $k-\omega$ SST models was conducted. The study revealed that while turbulence closure has negligible impact on single-particle settling in quiescent fluids, it is the governing factor in shear-driven sediment transport. The research identified that the $k-\epsilon$ model tends to over-predict sediment flux due to excessive turbulence production at stagnation points, while the Standard $k-\omega$ model is overly dissipative. The $k-\omega$ SST model was identified as the most suitable closure, offering a physically realistic balance by accurately capturing wake turbulence and bed-shielding effects without predicting premature erosion.
+	\item \textbf{Objective 3: To identify the most suitable two equation standard RANS turbulence closure scheme for the solver for better prediction of sediment transport phenomenon near bed region in open channel flow.}
+	\par This objective was addressed through a comparative study involving three standard two-equation RANS models: $k-\epsilon$, Standard $k-\omega$, and $k-\omega$ SST, applied to sediment transport in an open channel. The study found that the $k-\epsilon$ model tended to over-predict sediment flux due to excessive turbulence production at particle stagnation points, leading to premature erosion. The Standard $k-\omega$ model proved overly dissipative, under-predicting transport activity. The $k-\omega$ SST model was identified as the most suitable closure scheme, as it provided a physically realistic balance by accurately capturing turbulence in particle wakes and bed-shielding effects, resulting in better predictions of sediment transport dynamics near the bed.
 \end{itemize}
 
 \section{Key Conclusions}
@@ -25,9 +30,9 @@ The extent to which the specific research objectives outlined in Chapter 1 were 
 Based on the results and discussion, the following conclusions are drawn:
 
 \begin{enumerate}
-	\item \textbf{Robustness of Contact Physics:} The implementation of the Walton-Braun hysteretic spring model and GJK detection allows the solver to maintain stable, energy-conserving piles of non-spherical particles with a realistic solid fraction and coordination number.
-	\item \textbf{Accuracy of Drag Resolution:} The Immersed Boundary Method implemented avoids the need for empirical drag correlations for specific shapes. The solver naturally resolves pressure and viscous stresses over the particle surface, evidenced by the accurate reproduction of terminal settling velocities and the damped oscillation of floating bodies.
-	\item \textbf{Turbulence Modeling Recommendations:} For CFD-DEM applications involving open channel flow, the $k-\omega$ SST model is recommended.
+	\item A CFD-DEM model for free-surface sediment transport was developed by coupling RANS turbulence models with a DEM via an IBM, and by integrating the VoF method to resolve the air-water interface.
+	\item The solver demonstrates strong predictive capabilities, showing good agreement with fundamental physics and experimental data (Dietrich, 1982) in the test cases. It successfully simulates diverse scenarios, from quiescent settling and free-surface interaction to saltation in open-channel flow.
+	\item For CFD-DEM applications involving free surface flow, the \(k-\omega\) SST model is recommended as it predicts high TKE production in the particle wakes without forcing excessive particle velocity.
 \end{enumerate}
 
 \section{Limitations}

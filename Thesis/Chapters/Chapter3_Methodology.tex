@@ -57,6 +57,7 @@ In a hysteretic model, energy is dissipated by the difference in stiffness durin
 \begin{equation}
 	e = \sqrt{\frac{k_1}{k_2}}
 \end{equation}
+\equations{Analytical Coefficient of Restitution}
 
 \textbf{Simulation Parameters:}
 \begin{itemize}
@@ -120,11 +121,11 @@ Random loose packing of frictional cubes is expected to yield a solid fraction $
 \begin{itemize}
 	\item \textbf{Geometry:} A container with a $0.5\,m \times 0.5\,m$ base ($10L \times 10L$).
 	\item \textbf{Particles:} 200 Cubes with side length $L=0.05\,m$ and mass $m=1.0\,kg$ each.
-	\item \textbf{Contact Model:} Linear Spring-Dashpot with Friction.
+	\item \textbf{Contact Model:} Walton-Braun Hysteretic Spring model with Coulomb Friction model.
 	\begin{itemize}
-		\item Stiffness: $k = 1 \times 10^5 \, N/m$.
+		\item Loading Stiffness: $k_1 = 1 \times 10^5 \, N/m$.
+		\item Unloading Stiffness: $k_2 = 1.5 \times 10^5 \, N/m$.
 		\item Friction Coefficient: $\mu = 0.5$.
-		\item Damping: $\gamma_N = 50.0$.
 	\end{itemize}
 	\item \textbf{Controls:} Time step $dt = 1 \times 10^{-4}\,s$, End time $= 5.0\,s$.
 \end{itemize}
@@ -144,6 +145,7 @@ A particle falling in a fluid accelerates until Drag + Buoyancy equals Gravity.
 \begin{equation}
 	F_g = F_b + F_d \implies m g = (\rho_f V_{disp} g) + \left( \frac{1}{2} \rho_f v_t^2 C_d A \right)
 \end{equation}
+\equations{Force Balance for Settling Particle}
 
 \textbf{Domain and Mesh:}
 \begin{itemize}
@@ -188,6 +190,7 @@ Archimedes' principle for a floating object:
 \begin{equation}
 	\rho_s L^3 g = \rho_f (L^2 h_{sub}) g
 \end{equation}
+\equations{Archimedes' Principle for Floating Cube}
 
 \textbf{Domain and Mesh:}
 \begin{itemize}
@@ -202,12 +205,12 @@ Archimedes' principle for a floating object:
 	\item \textbf{Controls:} Time Step $\Delta t = 1 \times 10^{-4}\,s$, End Time $= 4.0\,s$.
 \end{itemize}
 
-%\begin{figure}[ht]
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/setup_floating.png}
-%	\caption{Setup for Test Case 5: A cube interacting with the air-water free surface.}
-%	\label{fig:setup_floating}
-%\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\textwidth]{Figures/Chapters/C03/setup_floating.png}
+	\caption{Setup for Test Case 5: A cube interacting with the air-water free surface.}
+	\label{fig:setup_floating}
+\end{figure}
 
 \section{Primary Application Study Case}
 The primary study case involves the simulation of turbulent free-surface flow over a mobile sediment bed in a rectangular channel. This case evaluates the solver's capability to simulate realistic transport regimes (bedload and suspension) under varying flow conditions using different RANS turbulence closures.
@@ -254,12 +257,12 @@ The computational domain and granular bed properties were consistent across all 
 	\item \textbf{Walls:} The bottom boundary ($y=0$) is a no-slip wall with standard wall functions. The top boundary ($y=H$) is treated as a free slip (atmosphere) condition.
 \end{itemize}
 
-%\begin{figure}[ht]
-%	\centering
-%	\includegraphics[width=0.7\textwidth]{Figures/Chapters/C03/sediment_bed_sim.png}
-%	\caption{Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
-%	\label{fig:Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
-%\end{figure}
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/Chapters/C03/sediment_bed_sim.png}
+	\caption{Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
+	\label{fig:Geometry for simulating particle-laden flow in a rectangular channel with dimensions in cm}
+\end{figure}
 
 
 

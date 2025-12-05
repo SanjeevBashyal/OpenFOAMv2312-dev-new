@@ -140,3 +140,48 @@ try:
     print("Packing plots generated.")
 except Exception as e:
     print(f"Error processing packing data: {e}")
+
+try:
+    df_packing = pd.read_csv(os.path.join(data_dir, "walton_braun_data.csv"))
+    
+    # Plot Kinetic Energy vs Time
+    plt.figure(figsize=(8, 5))
+    plt.plot(df_packing['Time'], df_packing['KE'], label='Kinetic Energy', color='purple')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Kinetic Energy (J)')
+    plt.title('Random Packing: Kinetic Energy vs Time')
+    plt.yscale('log')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "packing_ke_walter.png"), dpi=300)
+    plt.close()
+
+    # Plot Solid Fraction vs Time
+    plt.figure(figsize=(8, 5))
+    plt.plot(df_packing['Time'], df_packing['SolidFraction'], label='Solid Fraction', color='brown')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Solid Fraction')
+    plt.title('Random Packing: Solid Fraction vs Time')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.axhline(y=0.50, color='k', linestyle=':', label='Target ~0.50')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "packing_phi_walter.png"), dpi=300)
+    plt.close()
+    
+    # Plot Coordination Number vs Time
+    plt.figure(figsize=(8, 5))
+    plt.plot(df_packing['Time'], df_packing['CoordNum'], label='Coordination Number', color='black')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Avg Coordination Number')
+    plt.title('Random Packing: Coordination Number vs Time')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(output_dir, "packing_coord_walter.png"), dpi=300)
+    plt.close()
+    
+    print("Packing plots generated.")
+except Exception as e:
+    print(f"Error processing packing data: {e}")

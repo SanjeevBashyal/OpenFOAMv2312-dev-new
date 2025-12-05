@@ -27,41 +27,44 @@ The interaction between turbulence and sediment movement is highly complex in th
     \label{fig:Sediment transport near bed region}
 \end{figure}
 
-
 \section{Problem Statement}
-The accurate modeling of sediment transport in rivers remains a significant challenge due to the complexity of interactions between turbulent fluid flow and sediment particles. Traditional sediment transport models often fail to incorporate the full spectrum of turbulence effects, particularly in regions of high shear stress, and struggle to predict the dynamics of sediment-laden flows with sufficient accuracy \parencite{durbin_recent_2018,papanicolaou_sediment_2008}. Furthermore, many models rely on simplified representations of sediment particles, such as spherical assumptions, which limit their applicability to realistic scenarios involving irregularly shaped particles and dynamic flow conditions. The lack of robust turbulence closure schemes capable of effectively capturing sediment-fluid interactions exacerbates the uncertainty in sediment transport predictions, particularly in dynamic and high-energy environments \parencite{huang_modeling_2023}. \par
+The accurate modeling of sediment transport in rivers is a critical challenge due to the complex interplay between turbulent fluid flow and individual sediment particles, particularly in near-bed regions. Existing numerical models often struggle to capture the full spectrum of these interactions, leading to significant uncertainties in predicting sediment movement, erosion, and deposition. \par
 
-The limitations of existing solvers, including their inability to adequately resolve localized pressure variations and fluid-particle interactions, hinder their use for complex sediment transport phenomena. Models like SedFoam have shown promise in simulating sediment transport using Eulerian-Eulerian approaches but lack the flexibility to handle particle geometries beyond basic shapes or to simulate dynamic interactions in evolving fields effectively \parencite{chauchat_sedfoam-20_2017}. Recent studies have highlighted the need for integrating turbulence closure schemes with advanced particle modeling frameworks, such as the Discrete Element Method (DEM), to overcome these limitations \parencite{fu_improved_2016, stocker_dns-based_2024}. \par
+Continuum models, such as those implemented in SedFoam \parencite{chauchat_sedfoam-20_2017}, treat sediment as a continuous phase. While effective for high sediment concentrations and large-scale morphological changes, this approach inherently limits their ability to resolve the kinematics of individual, non-spherical particles, their collisions, or interlocking effects. These granular-scale phenomena are vital for accurately representing bedload transport and the physics of the sediment bed. \par
 
-Despite advancements in CFD-DEM solvers, challenges persist in implementing efficient coupling mechanisms and adaptive mesh handling to capture sediment-fluid boundaries accurately. Existing methods often suffer from computational inefficiency or fail to adapt dynamically to evolving particle geometries and flow conditions \parencite{isoz_hybrid_2022,studenik_openhfdib-dem_2024}. Additionally, the interaction between particle-boundary and inter-particle forces remains underexplored, limiting the ability of current solvers to predict sediment transport under varying flow regimes and sediment concentrations \parencite{andualem_erosion_2023}.\par
+Standard CFD-DEM solvers, like CFDEM and SediFoam \parencite{hager_parallel_2014,sun_sedifoam_2016}, offer a step towards resolving particle dynamics but frequently rely on simplified spherical particle representations or basic contact models. This simplification fails to capture the hydrodynamics of arbitrary-shaped particles, which are ubiquitous in natural river systems, thus limiting the fidelity of simulations involving realistic sediment grains.
 
-Addressing these gaps requires the development of a coupled turbulence closure and sediment transport model that integrates advanced CFD-DEM techniques with adaptable computational frameworks. By leveraging OpenFOAM for its flexibility and incorporating robust turbulence models, such a framework can provide improved predictive accuracy and computational efficiency, supporting the analysis and management of sediment transport in river systems.
+More recently, arbitrary-shape solvers, such as OpenHFDIB-DEM \parencite{studenik_openhfdib-dem_2024}, have made significant strides by employing Immersed Boundary Methods (IBM) to represent complex particle geometries. However, a key limitation of these advanced solvers is their lack of integrated free-surface modeling capabilities. This omission renders them unsuitable for simulating open-channel flows, where the air-water interface plays a crucial role in flow dynamics and particle entrainment.
+
+Addressing these multifaceted limitations requires the development of a coupled turbulence closure and sediment transport model that integrates advanced CFD-DEM techniques with adaptable computational frameworks, including robust free-surface handling. By leveraging OpenFOAM for its flexibility and incorporating advanced turbulence models and IBM for complex shapes, such a framework can provide improved predictive accuracy and computational efficiency for simulating sediment transport in river systems.
 
 \section{Research Questions}
 
 The research questions of the study are as follows:
 \begin{itemize}
-	\item What are the key interactions between turbulent flow structures and particle transport processes in river systems, and how can these interactions be quantitatively modeled?
-	\item How well does the OpenFOAM based CFD-DEM solver perform in predicting sediment mixed flow under various flow conditions?
-	\item What is the influence of turbulence closure scheme on RANS simulations involving sediment transport dynamics?
+	\item How can the interactions between turbulent flow structures and particle transport processes be mathematically modeled in free surface flows?
+	\item How well does the OpenFOAM based CFD-DEM solver that simulates free surface flows perform in predicting particle mixed flow under various conditions?
+	\item What is the influence of the turbulence closure scheme on the simulations performed by the solver involving sediment transport dynamics?
 	
 \end{itemize}
 
 \section{Objectives}
 The objectives of the research are as follows:
 \begin{itemize}
-	\item To develop a model that combines 3D turbulence modeling techniques of finite volume method with discrete element method in the immersed boundary mesh to simulate particle transport processes during fluid flow.
+	\item To develop a mathematical model that combines RANS turbulence closure models with discrete element method to simulate particle transport processes during free surface water flows.
 	\item To implement the model in OpenFOAM framework and to assess the predictive capabilities of the model.
-	\item To identify the most suitable two equation RANS turbulence closure scheme for better prediction of sediment transport phenomenon near bed region in open channel flow.
+	\item To identify the most suitable two equation standard RANS turbulence closure scheme for the solver for better prediction of sediment transport phenomenon near bed region in open channel flow.
 
 \end{itemize}
 
 \section{Significance of the study}
-Accurate predictions of sediment-laden flows are essential for managing dynamic river systems, especially in regions with high sediment loads and turbulent conditions, such as Himalayan rivers \parencite{andermann_sediment_2012}. Existing models often fail to capture the intricate interactions between fluid turbulence and sediment particles, leading to suboptimal predictions and management strategies \parencite{huang_modeling_2023}. By leveraging OpenFOAM’s flexibility and incorporating dynamically adaptable meshing and coupling mechanisms, this study aims to advance the field by providing a framework for simulating complex fluid-particle interactions which can be used for simulating sediment flow in open channel flows. This research seeks to develop a turbulence integrated particle transport numerical model that can provide better predictions of sediment movement in fluid flows, thereby enhancing computational capabilities for studying sediment dynamics in various environmental and engineering applications.
+Accurate predictions of sediment-laden flows are essential for managing dynamic river systems, especially in regions with high sediment loads and turbulent conditions, such as Himalayan rivers \parencite{andermann_sediment_2012}. However, existing numerical models present a critical trade-off: continuum-based approaches and standard CFD-DEM solvers using spherical particles fail to resolve the granular-scale physics of arbitrarily shaped grains, while advanced shape-resolved solvers often lack free-surface capabilities, rendering them unsuitable for open-channel applications \parencite{chauchat_sedfoam-20_2017, studenik_openhfdib-dem_2024}.\par
+
+This study's primary significance lies in bridging this critical gap by developing a numerical solver that integrates four key technologies into a single, cohesive framework within OpenFOAM: a Discrete Element Method (DEM) for arbitrary convex polyhedra, an Immersed Boundary Method (IBM) for fluid-solid coupling, Reynolds-Averaged Navier-Stokes (RANS) equations for turbulence closure, and the Volume of Fluid (VOF) method for free-surface tracking. This research seek to deliver a validated, open-source computational tool that enhances predictive capabilities for studying sediment dynamics. It aims to provide a more physically realistic framework for simulating the complex interplay between fluid turbulence, individual particle kinematics, and free-surface effects, thereby contributing to better-informed strategies in environmental and engineering applications.\par
 
 \section{Scope and Limitations}
 
-This study focuses on developing an OpenFOAM-based CFD-DEM solver for sediment transport modeling using RANS turbulence closure schemes. The research scope encompasses the analysis of existing solvers, development of a coupled CFD-DEM framework, and validation against benchmark cases and experimental data from literature.\par
+This study focuses on developing an OpenFOAM-based CFD-DEM solver for sediment transport modeling using RANS turbulence closure schemes. The research scope encompasses the study of existing solvers, development of a coupled CFD-DEM framework, and validation against fundamental test cases and data from literature.\par
 
 \subsection{Limitations of RANS Models and Rationale for Their Selection}
 
@@ -77,7 +80,7 @@ All simulations reported in this thesis were conducted on a laptop equipped with
 
 \subsection{Validation Limitations}
 
-This research does not include physical experiments conducted specifically for model validation. Instead, validation relies entirely on physical experiments reported in the literature. While this approach provides access to well-documented benchmark cases, it introduces a dependency on available experimental data. The comprehensiveness and representativeness of the validation dataset may be limited if the available data does not cover a sufficiently wide range of flow conditions, sediment characteristics, or geometric configurations. This limitation is acknowledged, and efforts were made to select validation cases that best represent the intended application of the developed solver.\par
+This research does not include physical experiments conducted specifically for model validation. Instead, validation relies entirely on fundamental physics and experiments reported in the literature. While this approach provides access to well-documented cases, it introduces a dependency on available experimental data. The comprehensiveness and representativeness of the validation dataset may be limited if the available data does not cover a sufficiently wide range of flow conditions, sediment characteristics, or geometric configurations. This limitation is acknowledged, and efforts were made to select validation cases that best represent the intended application of the developed solver.\par
 
 \section{Thesis Structure}
 

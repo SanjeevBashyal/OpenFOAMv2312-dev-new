@@ -122,11 +122,13 @@ The solver incorporates turbulence modelling through the Reynolds-Averaged Navie
 \begin{equation}
 	\mathbf{U} = \bar{\mathbf{U}} + \mathbf{u}'
 \end{equation}
+\equations{Reynolds Decomposition of Velocity}
 
 Substituting this into the Navier-Stokes equations and averaging yields the RANS equations, which introduce an additional term known as the Reynolds stress tensor ($\tau_{ij} = -\rho \overline{u'_i u'_j}$). To close the system of equations, the Boussinesq hypothesis is employed, relating the Reynolds stresses to the mean velocity gradients via an eddy viscosity ($\nu_t$):
 \begin{equation}
 	-\overline{u'_i u'_j} = \nu_t \left( \frac{\partial \bar{U}_i}{\partial x_j} + \frac{\partial \bar{U}_j}{\partial x_i} \right) - \frac{2}{3} k \delta_{ij}
 \end{equation}
+\equations{Boussinesq Hypothesis for Reynolds Stress}
 where $k$ is the turbulent kinetic energy. The effective viscosity in the momentum equation becomes $\nu_{eff} = \nu + \nu_t$. The specific turbulence model (e.g., $k-\epsilon$, $k-\omega$ SST) is selected at runtime using OpenFOAM's standard turbulence modelling framework (`turbulentTransportModel`), allowing for flexibility in choosing the appropriate closure for different flow regimes.
 
 \subsection{Volume of Fluid (VOF) Method}
@@ -140,9 +142,11 @@ where $\mathbf{U}_r$ is the relative compression velocity used to sharpen the in
 \begin{equation}
 	\rho = \alpha \rho_1 + (1-\alpha) \rho_2
 \end{equation}
+\equations{VOF Mixture Density}
 \begin{equation}
 	\mu = \alpha \mu_1 + (1-\alpha) \mu_2
 \end{equation}
+\equations{VOF Mixture Viscosity}
 
 \subsection{PIMPLE Algorithm}
 The pressure-velocity coupling is handled using the PIMPLE algorithm, which combines the PISO and SIMPLE algorithms. This ensures numerical stability and convergence for transient flows with large time steps. The algorithm solves the momentum predictor and pressure corrector steps iteratively within each time step.
@@ -165,18 +169,22 @@ The motion of each particle $i$ is governed by Newton's second law for translati
 \begin{equation}
 	m_i \frac{d\mathbf{v}_i}{dt} = \mathbf{F}_{total} = \mathbf{F}_{contact} + \mathbf{F}_{fluid} + \mathbf{F}_{gravity}
 \end{equation}
+\equations{Newton's Second Law for Particle Translation}
 \begin{equation}
 	\mathbf{I}_i \frac{d\boldsymbol{\omega}_i}{dt} + \boldsymbol{\omega}_i \times (\mathbf{I}_i \boldsymbol{\omega}_i) = \mathbf{T}_{total} = \mathbf{T}_{contact} + \mathbf{T}_{fluid}
 \end{equation}
+\equations{Newton's Second Law for Particle Rotation}
 
 \textbf{Time Integration:}
 A semi-implicit Euler integration scheme is used to update the particle state:
 \begin{equation}
 	\mathbf{v}_{t+\Delta t} = \mathbf{v}_t + \frac{\mathbf{F}_{total}}{m} \Delta t
 \end{equation}
+\equations{Euler Integration for Velocity}
 \begin{equation}
 	\mathbf{x}_{t+\Delta t} = \mathbf{x}_t + \mathbf{v}_{t+\Delta t} \Delta t
 \end{equation}
+\equations{Euler Integration for Position}
 Angular quantities are updated similarly, with quaternion normalization to maintain valid orientation.
 
 \subsection{Space Registry}
@@ -216,17 +224,19 @@ Once a collision is detected, the interaction forces are calculated using the Wa
 \textbf{Normal Force:}
 \begin{equation}
 	F_n = \begin{cases} 
-		k_1 \delta & \text{Loading } (\dot{\delta} \ge 0) \\
-		k_2 (\delta - \delta_0) & \text{Unloading } (\dot{\delta} < 0)
+		k_1 \delta & \text{Loading } (\delta \ge 0) \\
+		k_2 (\delta - \delta_p) & \text{Unloading } (\dot{\delta} < \delta_{max})
 	\end{cases}
 \end{equation}
-where $k_1$ and $k_2$ are loading and unloading stiffnesses, and $\delta_0$ is the residual overlap. This hysteresis accounts for energy dissipation (plasticity).
+\equations{Walton-Braun Hysteretic Normal Force}
+where $k_1$ and $k_2$ are loading and unloading stiffnesses, and $\delta_p$ is the residual overlap. This hysteresis accounts for energy dissipation (plasticity).
 
 \textbf{Tangential Force:}
 A Coulomb friction model limits the tangential force:
 \begin{equation}
 	F_t = \min(|k_t \xi|, \mu F_n)
 \end{equation}
+\equations{Coulomb Friction Model}
 
 \section{CFD-DEM Coupling}
 
@@ -265,12 +275,14 @@ A field $\epsilon$ is calculated to identify cells occupied by particles. In the
 \begin{equation}
 	\epsilon_{cell} = \begin{cases} 1 & \text{if } |\mathbf{x}_{cell} - \mathbf{x}_{particle}| < R \\ 0 & \text{otherwise} \end{cases}
 \end{equation}
+\equations{IBM Solid Volume Fraction}
 
 \textbf{Solid Velocity Field ($\mathbf{U}_{solid}$):}
 For cells inside a particle, a solid velocity is constructed to enforce the no-slip condition:
 \begin{equation}
 	\mathbf{U}_{solid} = \mathbf{v}_p + \boldsymbol{\omega}_p \times (\mathbf{x}_{cell} - \mathbf{x}_{particle})
 \end{equation}
+\equations{IBM Solid Velocity Construction}
 
 \subsection{Force Calculation and Application}
 The two-way coupling requires the exchange of forces.
@@ -278,8 +290,9 @@ The two-way coupling requires the exchange of forces.
 \textbf{Fluid-to-Particle Force:}
 The force exerted by the fluid on the particle is computed by integrating the pressure gradient and viscous stresses over the particle volume. In the implemented code, this is approximated by summing the contributions from occupied cells:
 \begin{equation}
-	\mathbf{F}_{fluid} = \sum_{cells} (-\nabla p)_{cell} V_{cell} \epsilon_{cell} + m_p \mathbf{g}
+	\mathbf{F}_{fluid} = \sum_{cells} \left(-\nabla p V_{cell} \epsilon_{cell}\right) + \sum_{cells}\left(\mu \nabla^2 \mathbf{U} \cdot \epsilon_{\text {cell }} \cdot V_{\text {cell }}\right)
 \end{equation}
+\equations{IBM Fluid-Particle Force Integration}
 This force is then applied to the particle in the DEM update step.
 
 \textbf{Particle-to-Fluid Coupling:}
